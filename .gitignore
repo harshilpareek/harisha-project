@@ -14,3 +14,6 @@ Thumbs.db
 # Supabase CLI local state
 date-night/supabase/.temp/
 date-night/supabase/.branches/
+
+# Node tooling (Tailwind build)
+node_modules/

@@ -1,0 +1,12 @@
+{
+  "name": "harisha",
+  "private": true,
+  "description": "A private date planner for two.",
+  "scripts": {
+    "build:css": "tailwindcss -i src/input.css -o styles.css --minify",
+    "watch:css": "tailwindcss -i src/input.css -o styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

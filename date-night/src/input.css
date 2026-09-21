@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Theme tokens.
+   Colour lives in custom properties so that the three theme states
+   (system default / forced light / forced dark) all resolve, and so
+   --accent can swap to whoever is currently voting.
+   ============================================================ */
+:root {
+  --paper:  #F1F0EA;
+  --raised: #FFFFFF;
+  --ink:    #16140F;
+  --muted:  #6E6A5E;
+  --rule:   #CFCCC0;
+  --pa:     #2B3BE8;   /* person A */
+  --pb:     #D01E48;   /* person B */
+  --match:  #10633F;
+  --warn:   #9A5B08;
+  --accent: var(--pa);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:  #121210;
+    --raised: #1B1A17;
+    --ink:    #F0EEE6;
+    --muted:  #969184;
+    --rule:   #3A3830;
+    --pa:     #8894FF;
+    --pb:     #FF6B8A;
+    --match:  #4FC28C;
+    --warn:   #E0A64A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:  #121210;
+  --raised: #1B1A17;
+  --ink:    #F0EEE6;
+  --muted:  #969184;
+  --rule:   #3A3830;
+  --pa:     #8894FF;
+  --pb:     #FF6B8A;
+  --match:  #4FC28C;
+  --warn:   #E0A64A;
+  color-scheme: dark;
+}
+:root[data-person="a"] { --accent: var(--pa); }
+:root[data-person="b"] { --accent: var(--pb); }
+
+@layer base {
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+@layer components {
+  /* Archivo carries a width axis. The wide cut gives headings a
+     signage / ballot-header feel a plain grotesque doesn't have. */
+  .wide   { font-variation-settings: 'wdth' 112; }
+  .wider  { font-variation-settings: 'wdth' 125; }
+  .narrow { font-variation-settings: 'wdth' 85; }
+
+  .tabbtn {
+    appearance: none; background: none; border: none; cursor: pointer;
+    padding: 10px 0; margin-right: 26px; color: var(--muted);
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px;
+    letter-spacing: .1em; text-transform: uppercase;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+  }
+  .tabbtn[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  #toast.show { opacity: 1; }
+
+  /* Tailwind can't apply an opacity modifier to a var() colour,
+     so the modal backdrop mixes its own alpha. */
+  .scrim { background: color-mix(in srgb, var(--ink) 62%, transparent); }
+
+  /* Diagonal hatch marks placeholder data so a sample find can never
+     be mistaken for something the scout actually returned. */
+  .hatch {
+    background-image: repeating-linear-gradient(45deg,
+      var(--rule) 0 1px, transparent 1px 6px);
+  }
+
+  .anim-in { animation: slideIn .22s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}

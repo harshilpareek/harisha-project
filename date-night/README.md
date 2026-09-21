@@ -136,11 +136,38 @@ A sweep that finds nothing reports zero rather than failing.
 
 ---
 
+## The front end
+
+Built with **Tailwind**, compiled to a static `styles.css` (~14KB) rather than
+the runtime CDN — so there's no third-party script to fail, no flash of
+unstyled content, and the page works offline.
+
+You don't need a local toolchain: the GitHub Actions workflow recompiles the
+CSS on every push, so you can edit classes straight in GitHub's web editor. To
+build locally anyway:
+
+```bash
+cd date-night
+npm install
+npm run build:css     # or: npm run watch:css
+```
+
+**Design notes.** The interface is modelled on a ballot paper, since a secret
+vote is what the app actually is: flat, high contrast, structured with rules
+and borders instead of floating cards. There are no shadows, no gradients and
+no emoji — each theme carries a two-letter code (`FD`, `GM`, `GO`…) set in
+monospace. The only two colours in the system are the two of you, so a match is
+literally where your colours meet. Voting is keyboard-driven: **1** pass,
+**2** maybe, **3** yes.
+
 ## Files
 
 | Path | What it is |
 |------|-----------|
 | `index.html` | The whole app — deck, voting, consensus, taste profiles. |
+| `src/input.css` | Theme tokens + component classes; source for the build. |
+| `styles.css` | Compiled Tailwind output. Rebuilt by CI; committed so the page works without a build. |
+| `tailwind.config.js` | Colours map to CSS custom properties so theming works. |
 | `supabase-schema.sql` | Tables, the two-account gate, RLS, reveal functions. |
 | `supabase/functions/discover-dates/index.ts` | The Reddit + blog scout. |
 | `config.example.js` | Template → copy to `config.js` and commit. |

@@ -39,6 +39,17 @@ jobs:
 
       # The app lives in date-night/, but we publish that folder as the
       # site root so the public URL stays clean.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Recompile Tailwind so edits made in GitHub's web editor pick up
+      # any new utility classes without anyone running a local build.
+      - name: Build CSS
+        working-directory: date-night
+        run: npx --yes tailwindcss@3.4.17 -i src/input.css -o styles.css --minify
+
       - name: Package the site
         uses: actions/upload-pages-artifact@v3
         with:
