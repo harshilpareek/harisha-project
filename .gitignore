@@ -1,5 +1,8 @@
-# Local backend keys — never commit these
-date-night/config.js
+# NOTE: date-night/config.js is intentionally NOT ignored.
+# It holds the Supabase URL + anon public key, which are meant to be
+# public (row-level security is what protects the data). Committing it
+# is what makes the hosted site work for both of you without any
+# per-device setup. Never put the service_role key in it.
 
 # OS / editor cruft
 .DS_Store
@@ -7,3 +10,7 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Supabase CLI local state
+date-night/supabase/.temp/
+date-night/supabase/.branches/

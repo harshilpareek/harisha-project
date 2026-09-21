@@ -61,12 +61,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
    Classification — cheap keyword heuristics, no LLM needed.
    ------------------------------------------------------------ */
 const VIBE_RULES: [string, RegExp][] = [
-  ["foodie", /\b(restaurant|food|eat|dinner|brunch|taco|ramen|pizza|bakery|coffee|café|cafe|wine|brewery|distillery|tasting|market|dessert|ice cream)\b/i],
-  ["outdoorsy", /\b(hike|hiking|trail|park|lake|river|beach|kayak|canoe|paddle|camp|bike|mountain|waterfall|garden|botanical|sunset|stargaz)\b/i],
-  ["cultured", /\b(museum|gallery|art|theater|theatre|play|orchestra|symphony|exhibit|history|historic|bookstore|library|film|cinema|jazz)\b/i],
-  ["playful", /\b(arcade|mini golf|minigolf|bowling|karaoke|trivia|game|escape room|axe throw|go.?kart|roller|skating|amusement|carnival)\b/i],
-  ["adventurous", /\b(climb|zip line|ziplin|skydiv|surf|rent|road trip|explore|adventure|rafting|horseback|hot air)\b/i],
-  ["romantic", /\b(romantic|sunset|candle|rooftop|view|scenic|picnic|stroll|intimate|cozy dinner)\b/i],
+  ["food", /\b(restaurant|food|eat|dinner|brunch|taco|ramen|pizza|bakery|coffee|café|cafe|wine|brewery|distillery|tasting|market|dessert|ice cream)\b/i],
+  ["outdoors", /\b(hike|hiking|trail|park|lake|river|beach|kayak|canoe|paddle|camp|bike|mountain|waterfall|garden|botanical|sunset|stargaz)\b/i],
+  ["culture", /\b(museum|gallery|art|theater|theatre|play|orchestra|symphony|exhibit|history|historic|bookstore|library|film|cinema|jazz)\b/i],
+  ["games", /\b(arcade|mini golf|minigolf|bowling|karaoke|trivia|game|escape room|axe throw|go.?kart|roller|skating|amusement|carnival)\b/i],
+  ["adventure", /\b(climb|zip line|ziplin|skydiv|surf|rent|road trip|explore|adventure|rafting|horseback|hot air)\b/i],
+  ["romance", /\b(romantic|sunset|candle|rooftop|view|scenic|picnic|stroll|intimate|cozy dinner)\b/i],
   ["cozy", /\b(cozy|at home|home|movie night|blanket|fireplace|bake|board game|puzzle|spa|bath)\b/i],
 ];
 
@@ -81,7 +81,7 @@ const TIME_RULES: [string, RegExp][] = [
 ];
 
 function classify(text: string) {
-  const vibe = VIBE_RULES.find(([, re]) => re.test(text))?.[0] ?? "spontaneous";
+  const vibe = VIBE_RULES.find(([, re]) => re.test(text))?.[0] ?? "night";
   const setting = SETTING_RULES.find(([, re]) => re.test(text))?.[0] ?? "out";
   const time_of_day = TIME_RULES.find(([, re]) => re.test(text))?.[0] ?? "evening";
 
@@ -90,7 +90,7 @@ function classify(text: string) {
   if (/\bfree\b|\bno cost\b|\bcosts? nothing\b|\bdoesn'?t cost\b/i.test(text)) budget = 0;
   else if (/\bcheap\b|\bbudget\b|\baffordable\b|\bunder \$?\d{1,2}\b/i.test(text)) budget = 1;
   else if (/\bexpensive\b|\bsplurge\b|\bfancy\b|\bupscale\b|\btasting menu\b|\$\d{3,}/i.test(text)) budget = 3;
-  else if (setting === "home" || vibe === "outdoorsy") budget = 1;
+  else if (setting === "home" || vibe === "outdoors") budget = 1;
 
   return { vibe, setting, time_of_day, budget };
 }

@@ -1,7 +1,14 @@
 <title>Harisha</title>
-<meta name="description" content="A private date planner for two — vote blind, find your matches, and let the web scout local ideas for you." />
+<meta name="description" content="A private date planner for two. Vote on ideas in secret, see only what you both said yes to, and let a scout hunt for things to do near you." />
+<meta name="theme-color" content="#DC3F6B" />
+<meta name="robots" content="index, follow" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Harisha" />
+<meta property="og:description" content="A private date planner for two. Vote in secret, match on what you both want, and stop arguing about what to do." />
+<meta name="twitter:card" content="summary" />
 
-<!-- Optional self-host backend config (copy config.example.js -> config.js). Harmless if absent. -->
+<!-- Site config: Supabase keys + the two people who can sign in.
+     Copy config.example.js -> config.js. Harmless if absent. -->
 <script src="config.js" onerror="void 0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
@@ -439,80 +446,151 @@
 
 /* ---------- Curated deck (the always-available baseline) ---------- */
 const VIBES = {
-  cozy:       { label: "Cozy",        em: "🛋️" },
-  adventurous:{ label: "Adventurous", em: "🧭" },
-  romantic:   { label: "Romantic",    em: "🌹" },
-  playful:    { label: "Playful",     em: "🎲" },
-  foodie:     { label: "Foodie",      em: "🍜" },
-  cultured:   { label: "Cultured",    em: "🎭" },
-  outdoorsy:  { label: "Outdoorsy",   em: "🌲" },
-  spontaneous:{ label: "Spontaneous", em: "⚡" },
+  food:      { label: "Food",       em: "\U0001F35C" },
+  games:     { label: "Game night", em: "\U0001F3B2" },
+  night:     { label: "Going out",  em: "\U0001F306" },
+  cozy:      { label: "Cozy in",    em: "\U0001F6CB️" },
+  outdoors:  { label: "Outdoors",   em: "\U0001F332" },
+  culture:   { label: "Culture",    em: "\U0001F3AD" },
+  adventure: { label: "Adventure",  em: "\U0001F9ED" },
+  romance:   { label: "Romance",    em: "\U0001F339" },
 };
 
+/* The house deck. `v` is the theme, budget 0-3 (free -> $$$),
+   setting home|out|outdoors, time day|evening|late. */
 const DECK = [
-  { t:"Cook a country you've never eaten", b:"Pick a place on the map, find a recipe from it, and make dinner together — bonus points for the playlist.", v:"foodie", budget:1, setting:"home", time:"evening", em:"🌍" },
-  { t:"Sunset picnic, no phones", b:"Grab snacks, a blanket, and a good spot facing west. Phones in the bag until the sun's down.", v:"romantic", budget:1, setting:"outdoors", time:"evening", em:"🌅" },
-  { t:"Blind bookstore swap", b:"Split up, secretly pick a book you think the other will love, wrap it, and swap.", v:"cultured", budget:1, setting:"out", time:"day", em:"📚" },
-  { t:"Build a pillow fort and stream something bad", b:"The worse the movie, the better. Snacks required, effort optional.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🏰" },
-  { t:"Golden-hour photo walk", b:"Wander your neighborhood and take turns photographing each other in the best light of the day.", v:"romantic", budget:0, setting:"outdoors", time:"evening", em:"📷" },
-  { t:"Two-bar cocktail crawl", b:"One drink each at two spots you've never tried. Compare notes on the walk between.", v:"spontaneous", budget:2, setting:"out", time:"late", em:"🍸" },
-  { t:"Farmers market, then cook the haul", b:"Buy whatever looks best with no plan, then improvise a meal from it back home.", v:"foodie", budget:2, setting:"out", time:"day", em:"🧺" },
-  { t:"Stargazing drive", b:"Head somewhere darker than home, lie back, and find three constellations between you.", v:"outdoorsy", budget:1, setting:"outdoors", time:"late", em:"🌌" },
-  { t:"The 100-question jar", b:"Write deep and silly questions on slips of paper, take turns pulling. No topic off-limits.", v:"romantic", budget:0, setting:"home", time:"evening", em:"🫙" },
-  { t:"Learn a dance from a video", b:"Pick one clip, clear the floor, and don't stop until you get the chorus right.", v:"playful", budget:0, setting:"home", time:"evening", em:"💃" },
-  { t:"Museum, but make it a game", b:"Each secretly pick a 'favorite' before you leave; guess each other's at the exit.", v:"cultured", budget:1, setting:"out", time:"day", em:"🖼️" },
-  { t:"Breakfast for dinner in bed", b:"Pancakes, eggs, the works — at 8pm, in pajamas, tray and all.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🥞" },
-  { t:"Sunrise mission", b:"Set an alarm, grab coffee, and go watch the day start somewhere with a view.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🌄" },
-  { t:"Thrift-store fit challenge", b:"$15 each, 20 minutes, dress the other person head to toe. Wear it to dinner.", v:"playful", budget:1, setting:"out", time:"day", em:"👗" },
-  { t:"Backyard camping", b:"Tent, string lights, ghost stories, and s'mores over the stove if you must.", v:"cozy", budget:1, setting:"home", time:"late", em:"⛺" },
-  { t:"Ramen or taco pilgrimage", b:"Find the most-hyped spot for one food you both love and finally go.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍜" },
-  { t:"Paint each other (badly)", b:"Cheap canvases, 30-minute timer, portraits of each other. Talent not required.", v:"playful", budget:1, setting:"home", time:"evening", em:"🎨" },
-  { t:"Hike to a payoff", b:"Pick a trail that ends in a view, a waterfall, or a swimming hole and earn it.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🥾" },
-  { t:"Recreate your first date", b:"Same place, or as close as you can get. Order what you ordered then.", v:"romantic", budget:2, setting:"out", time:"evening", em:"💞" },
-  { t:"Board-game tournament for stakes", b:"Best of three. Loser owes the winner a favor of the winner's choosing.", v:"playful", budget:0, setting:"home", time:"evening", em:"🎲" },
-  { t:"Late-night diner + drive", b:"Fries at midnight, windows down, the good playlist, nowhere to be.", v:"spontaneous", budget:1, setting:"out", time:"late", em:"🚗" },
-  { t:"Couples' cooking class", b:"Book a real class — pasta, sushi, dumplings — and make a mess together.", v:"foodie", budget:3, setting:"out", time:"evening", em:"👩‍🍳" },
-  { t:"Home spa night", b:"Face masks, warm towels, playlist of rain sounds, phones in another room.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧖" },
-  { t:"Bike somewhere new", b:"Ride to a part of town you never go and find lunch you didn't plan.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🚲" },
-  { t:"Live music, any genre", b:"Cheapest ticket to whatever's on tonight — a bar band counts.", v:"cultured", budget:2, setting:"out", time:"late", em:"🎸" },
-  { t:"Build the ultimate charcuterie board", b:"Split up in the store, meet at checkout, assemble a ridiculous spread.", v:"foodie", budget:2, setting:"home", time:"evening", em:"🧀" },
-  { t:"Projector movie outside", b:"Sheet on the wall, blanket on the grass, snacks smuggled from home.", v:"cozy", budget:1, setting:"outdoors", time:"late", em:"🎬" },
-  { t:"Try the scary ride", b:"The rock wall, the roller coaster, the karaoke stage — the thing you'd normally skip.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🎢" },
-  { t:"Puzzle + wine night", b:"1000 pieces, two glasses, one slow evening with nowhere to be.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧩" },
-  { t:"Volunteer together", b:"Sign up for a shift — food bank, animal shelter, beach cleanup — and do good as a team.", v:"cultured", budget:0, setting:"out", time:"day", em:"🤝" },
-  { t:"Sunset kayak or paddle", b:"Rent a boat for an hour and be on the water as the light goes gold.", v:"outdoorsy", budget:2, setting:"outdoors", time:"evening", em:"🛶" },
-  { t:"Dessert-first date", b:"Go straight for the best dessert in town, then figure out dinner after. Rebel.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🍰" },
-  { t:"Write letters to future-you", b:"Each write a letter to open on your next anniversary. Seal, hide, wait.", v:"romantic", budget:0, setting:"home", time:"evening", em:"💌" },
-  { t:"Karaoke, no matter how bad", b:"Private room or brave open mic. One duet is mandatory.", v:"playful", budget:2, setting:"out", time:"late", em:"🎤" },
-  { t:"Lazy brunch crawl", b:"Coffee, pastries, wander, then a long brunch you didn't have to make.", v:"foodie", budget:2, setting:"out", time:"day", em:"🥐" },
-  { t:"Stretch and slow down together", b:"Follow a class or a video and actually slow all the way down for once.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🧘" },
-  { t:"Explore a town you've never visited", b:"Pick a spot 30–60 min away, drive out, and just wander with no itinerary.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🗺️" },
-  { t:"Candlelit dinner you cook together", b:"Nice tablecloth, real candles, a recipe slightly above your skill level.", v:"romantic", budget:2, setting:"home", time:"evening", em:"🕯️" },
-  { t:"Arcade or mini-golf showdown", b:"Tokens, tickets, terrible putting. Loser buys the ice cream.", v:"playful", budget:2, setting:"out", time:"evening", em:"🕹️" },
-  { t:"Rooftop city-light watch", b:"Find the best free view of the skyline and just take it in with a drink.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🌃" },
-  { t:"Plan your dream trip (for real-ish)", b:"Pick a fantasy destination and build the whole itinerary, budget and all.", v:"cozy", budget:0, setting:"home", time:"evening", em:"✈️" },
-  { t:"Bake something ambitious", b:"Croissants, a layer cake, homemade bread — pick the intimidating one.", v:"foodie", budget:1, setting:"home", time:"day", em:"🥖" },
-  { t:"Botanical garden or greenhouse", b:"Wander somewhere green and warm and pretend you're somewhere tropical.", v:"cultured", budget:1, setting:"out", time:"day", em:"🌿" },
-  { t:"At-home tasting flight", b:"Three bottles or blends, blind, scorecards and all. Get pretentious about it.", v:"cozy", budget:2, setting:"home", time:"evening", em:"🍷" },
-  { t:"Geocaching scavenger hunt", b:"Follow the app to hidden caches around town, or make a hunt for each other.", v:"adventurous", budget:0, setting:"outdoors", time:"day", em:"🧭" },
-  { t:"Order only things you've never tried", b:"Go somewhere and order nothing familiar. No safe picks allowed.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍽️" },
-  { t:"Rainy-day café hop", b:"Two cafés, one shared dessert at each, and a long unhurried talk.", v:"cozy", budget:1, setting:"out", time:"day", em:"☕" },
-  { t:"Firepit + long conversation", b:"Backyard fire or a beach one where allowed. Marshmallows and no agenda.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🔥" },
-  { t:"Dawn or dusk beach walk", b:"Shoes off, edge of the water, no destination. Collect something small.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🏖️" },
-  { t:"Reverse date: plan each other's", b:"Each secretly plans a mini-date for the other, back to back, same night.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🔄" },
-  { t:"Comedy night", b:"Live stand-up or a special on the couch — anything to laugh until it hurts.", v:"playful", budget:2, setting:"out", time:"late", em:"😂" },
-  { t:"Local history walk", b:"Take a self-guided tour of your own city like tourists.", v:"cultured", budget:0, setting:"out", time:"day", em:"🏛️" },
+  /* ---------- FOOD ---------- */
+  { t:"Pick a country off the map and cook it", b:"Close your eyes, point, then find a recipe from wherever you landed. Playlist from there too.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F30D" },
+  { t:"Taco crawl, three stops, one winner", b:"One taco each per place, no repeats on the filling. Declare a champion at the end.", v:"food", budget:1, setting:"out", time:"evening", em:"\U0001F32E" },
+  { t:"Ramen pilgrimage", b:"Find the bowl people argue about online and finally go settle it yourselves.", v:"food", budget:2, setting:"out", time:"evening", em:"\U0001F35C" },
+  { t:"Monochrome dinner", b:"Pick a color. Every single thing on the table has to be it, drinks included.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F3A8" },
+  { t:"Cook a menu from 1974", b:"Find a real vintage menu online, make it straight-faced, dress the part if you're brave.", v:"food", budget:2, setting:"home", time:"evening", em:"\U0001F4FB" },
+  { t:"Chopped: five mystery ingredients each", b:"Shop for each other in secret, five items, then cook with whatever you're handed.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F9FA" },
+  { t:"Breakfast for dinner, pajamas mandatory", b:"Pancakes at 8pm. The whole spread. No one is allowed to get dressed.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F95E" },
+  { t:"Build a ridiculous grazing board", b:"Split up in the store, meet at the till, assemble something absurd. One weird item each.", v:"food", budget:2, setting:"home", time:"evening", em:"\U0001F9C0" },
+  { t:"International grocery run", b:"$20 each, one aisle you've never shopped, no phones until you're home and cooking.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F6D2" },
+  { t:"Bake the intimidating thing", b:"Croissants, a layer cake, real bread. Pick the one that scares you and commit.", v:"food", budget:1, setting:"home", time:"day", em:"\U0001F950" },
+  { t:"Dessert first, dinner later", b:"Go straight for the best dessert in town. Work out the rest of the evening afterwards.", v:"food", budget:2, setting:"out", time:"evening", em:"\U0001F370" },
+  { t:"Farmers market haul, no plan", b:"Buy whatever looks best with no recipe in mind, then improvise dinner from it.", v:"food", budget:2, setting:"out", time:"day", em:"\U0001F33D" },
+  { t:"Order only what you've never had", b:"Anywhere you like, but nothing familiar is allowed on the table. No safe picks.", v:"food", budget:2, setting:"out", time:"evening", em:"\U0001F37D️" },
+  { t:"Take a real cooking class", b:"Pasta, sushi, dumplings, whatever's on. Someone else cleans up for once.", v:"food", budget:3, setting:"out", time:"evening", em:"\U0001F469‍\U0001F373" },
+  { t:"Dumplings from scratch", b:"Wrappers and all. They'll look terrible and taste incredible. Freeze the extras.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F95F" },
+  { t:"Spice ladder dinner", b:"Four dishes, mild to genuinely painful. Milk on standby. Whoever taps out first does dishes.", v:"food", budget:1, setting:"home", time:"evening", em:"\U0001F336️" },
+  { t:"Blind tasting flight at home", b:"Three bottles, teas or hot sauces, labels hidden, scorecards out. Get insufferable about it.", v:"food", budget:2, setting:"home", time:"evening", em:"\U0001F377" },
+  { t:"Food hall, split everything", b:"Different stall each round, one dish at a time, shared. Keep going until you tap out.", v:"food", budget:2, setting:"out", time:"evening", em:"\U0001F362" },
+
+  /* ---------- GAME NIGHT ---------- */
+  { t:"Board game tournament with stakes", b:"Best of three. Loser owes a favor the winner names, written down and sealed now.", v:"games", budget:0, setting:"home", time:"evening", em:"\U0001F3B2" },
+  { t:"Start a co-op campaign tonight", b:"Pick a game you can play together over weeks and play session one properly, snacks and all.", v:"games", budget:1, setting:"home", time:"evening", em:"\U0001F3AE" },
+  { t:"Retro arcade showdown", b:"Roll of tokens, split it evenly, and combine your tickets at the end for the dumbest prize available.", v:"games", budget:2, setting:"out", time:"evening", em:"\U0001F579️" },
+  { t:"Mini golf grudge match", b:"Eighteen holes, real scorecard, zero mercy. Loser buys ice cream.", v:"games", budget:2, setting:"out", time:"day", em:"⛳" },
+  { t:"Bar trivia with a stupid team name", b:"Team of two against tables of eight. You will lose. The name is the real point.", v:"games", budget:1, setting:"out", time:"late", em:"\U0001F9E0" },
+  { t:"Learn a two-player card game", b:"Cribbage, gin, piquet. Learn it properly tonight and keep a running score forever.", v:"games", budget:0, setting:"home", time:"evening", em:"\U0001F0CF" },
+  { t:"1000 pieces and a drink", b:"Edges first, no phones, and whoever places the last piece gets breakfast made for them.", v:"games", budget:1, setting:"home", time:"evening", em:"\U0001F9E9" },
+  { t:"Escape room", b:"Book the one with the silly theme. Sixty minutes of finding out how you two problem-solve.", v:"games", budget:3, setting:"out", time:"evening", em:"\U0001F510" },
+  { t:"Bowling, but you invent the rules", b:"Left hand only, granny-style, eyes shut for one frame. Make it up as you go.", v:"games", budget:2, setting:"out", time:"evening", em:"\U0001F3B3" },
+  { t:"Best of eleven on the couch", b:"One racing or fighting game, a proper bracket, trash talk encouraged and expected.", v:"games", budget:0, setting:"home", time:"evening", em:"\U0001F3CE️" },
+  { t:"Invent a game from household junk", b:"Twenty minutes to design it with whatever's in the drawer, then actually play it.", v:"games", budget:0, setting:"home", time:"evening", em:"\U0001F9E6" },
+  { t:"Chess ladder — loser cooks", b:"One game a night for a week, running tally on the fridge. Sunday's loser cooks Sunday dinner.", v:"games", budget:0, setting:"home", time:"evening", em:"♟️" },
+  { t:"Party game night, snacks required", b:"The phone-controller kind. Two players is enough if you're both willing to be ridiculous.", v:"games", budget:1, setting:"home", time:"late", em:"\U0001F4FA" },
+  { t:"Darts or pool at a dive bar", b:"Cheap table, bad lighting, a jukebox. Play until someone wins three in a row.", v:"games", budget:1, setting:"out", time:"late", em:"\U0001F3AF" },
+  { t:"Write a quiz about each other", b:"Ten questions each, answered in secret, then marked out loud. Expect at least one argument.", v:"games", budget:0, setting:"home", time:"evening", em:"\U0001F4DD" },
+  { t:"Tabletop RPG one-shot", b:"A self-contained adventure for two. Silly voices are not optional, they're the whole point.", v:"games", budget:1, setting:"home", time:"late", em:"\U0001F409" },
+  { t:"Speedrun a co-op puzzle game", b:"Pick something short, play it twice, and try to beat your own first time.", v:"games", budget:1, setting:"home", time:"evening", em:"⏱️" },
+
+  /* ---------- GOING OUT ---------- */
+  { t:"Two-bar cocktail crawl", b:"One drink each at two places you've never tried. Compare notes on the walk between.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F378" },
+  { t:"Cheapest ticket to whatever's on", b:"Don't research it. Whoever's playing tonight, go, and buy the opener's merch.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F3B8" },
+  { t:"Karaoke, one duet minimum", b:"Private room or brave open mic. You each pick the other's song and refusing isn't allowed.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F3A4" },
+  { t:"Stand-up night", b:"Small room, unknown lineup, two-drink minimum. Sit far enough back to be safe.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F602" },
+  { t:"Late-night diner and a drive", b:"Fries at midnight, windows down, one song each and absolutely no skipping.", v:"night", budget:1, setting:"out", time:"late", em:"\U0001F697" },
+  { t:"Rooftop, city lights, one drink", b:"Find the best free view you can get to. Name the buildings you know, invent names for the rest.", v:"night", budget:1, setting:"out", time:"late", em:"\U0001F303" },
+  { t:"Go dancing, any genre", b:"Salsa night, a goth club, a wedding-band cover set. The genre matters less than going.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F483" },
+  { t:"Open mic night", b:"Usually free, always unpredictable. Somewhere between transcendent and deeply awkward.", v:"night", budget:0, setting:"out", time:"late", em:"\U0001F399️" },
+  { t:"Night market wander", b:"Eat your way down one side and back up the other. Buy one thing you don't need.", v:"night", budget:1, setting:"out", time:"late", em:"\U0001F3EE" },
+  { t:"Arcade bar", b:"Drinks and a pocket of quarters. Old cabinets hit differently at 11pm.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F47E" },
+  { t:"Jazz bar, phones away", b:"Small room, live trio, nothing to do but listen and sit close.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F3B7" },
+  { t:"A neighborhood you never go, after dark", b:"Get off two stops early and walk. Eat at whatever looks busy.", v:"night", budget:1, setting:"out", time:"late", em:"\U0001F319" },
+  { t:"Last-minute tickets, don't look at what", b:"Whatever's discounted tonight. Buy first, find out what it is on the way there.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F39F️" },
+  { t:"The late showing", b:"Drive-in if you've got one, otherwise the 10:40 screening with the empty theater.", v:"night", budget:2, setting:"out", time:"late", em:"\U0001F3AC" },
+  { t:"Three patios, one evening", b:"Happy hour at each, one small thing to eat and one drink, then move on.", v:"night", budget:2, setting:"out", time:"evening", em:"\U0001F37B" },
+
+  /* ---------- COZY IN ---------- */
+  { t:"Pillow fort and a terrible movie", b:"The worse the film the better. Cushions off every seat in the house.", v:"cozy", budget:0, setting:"home", time:"evening", em:"\U0001F3F0" },
+  { t:"Home spa night", b:"Face masks, warm towels, rain sounds, phones in a different room entirely.", v:"cozy", budget:1, setting:"home", time:"evening", em:"\U0001F9D6" },
+  { t:"Plan a trip you might actually take", b:"Pick somewhere, build the whole itinerary and budget, then put one real thing aside toward it.", v:"cozy", budget:0, setting:"home", time:"evening", em:"✈️" },
+  { t:"Reading night, same couch", b:"Different books, same blanket, one lamp. Read the good bits out loud when you hit them.", v:"cozy", budget:0, setting:"home", time:"evening", em:"\U0001F4D6" },
+  { t:"Backyard camping", b:"Tent, string lights, and s'mores made over the stove if you have to. Zip it up and talk till you sleep.", v:"cozy", budget:1, setting:"home", time:"late", em:"⛺" },
+  { t:"Projector movie in the yard", b:"Sheet on the wall, blanket on the grass, snacks smuggled out from the kitchen.", v:"cozy", budget:1, setting:"outdoors", time:"late", em:"\U0001F4FD️" },
+  { t:"Bake something and play old albums", b:"One record start to finish, no shuffling, while something slow happens in the oven.", v:"cozy", budget:1, setting:"home", time:"day", em:"\U0001F3B6" },
+  { t:"Stretch and slow all the way down", b:"Follow a class or a video and actually stop moving for forty minutes. End in silence.", v:"cozy", budget:0, setting:"home", time:"evening", em:"\U0001F9D8" },
+  { t:"Rainy-day café hop", b:"Two cafés, one shared dessert at each, and a conversation with nowhere to be.", v:"cozy", budget:1, setting:"out", time:"day", em:"☕" },
+  { t:"Declutter one room, then reward yourselves", b:"Ninety minutes, one room, music loud. Takeout of your choosing the second it's done.", v:"cozy", budget:1, setting:"home", time:"day", em:"\U0001F4E6" },
+  { t:"Candles, no screens, until bed", b:"Lights off at nine, candles on, and see what you end up talking about.", v:"cozy", budget:0, setting:"home", time:"late", em:"\U0001F56F️" },
+  { t:"Documentary rabbit hole", b:"Pick something neither of you knows anything about and follow it for three episodes.", v:"cozy", budget:0, setting:"home", time:"late", em:"\U0001F4FA" },
+
+  /* ---------- OUTDOORS ---------- */
+  { t:"Sunset picnic, phones in the bag", b:"Snacks, a blanket, somewhere facing west. Nothing comes out of the bag until the sun's down.", v:"outdoors", budget:1, setting:"outdoors", time:"evening", em:"\U0001F305" },
+  { t:"Hike that ends in a payoff", b:"A view, a waterfall, a swimming hole. Pack one snack you only open at the top.", v:"outdoors", budget:0, setting:"outdoors", time:"day", em:"\U0001F97E" },
+  { t:"Drive somewhere dark and find constellations", b:"Get out past the light pollution, lie back, and find three between you.", v:"outdoors", budget:1, setting:"outdoors", time:"late", em:"\U0001F30C" },
+  { t:"Sunrise mission", b:"Alarm set stupidly early, coffee in hand, somewhere with a view. Best breakfast in town after.", v:"outdoors", budget:1, setting:"outdoors", time:"day", em:"\U0001F304" },
+  { t:"Bike to a part of town you don't know", b:"Coin flip at every big junction. Eat wherever you end up.", v:"outdoors", budget:1, setting:"outdoors", time:"day", em:"\U0001F6B2" },
+  { t:"Paddle at golden hour", b:"Rent a kayak or a canoe for an hour and be on the water while the light goes gold.", v:"outdoors", budget:2, setting:"outdoors", time:"evening", em:"\U0001F6F6" },
+  { t:"Barefoot at the water's edge", b:"Shoes off, no destination, and each collect one small thing to take home.", v:"outdoors", budget:0, setting:"outdoors", time:"day", em:"\U0001F3D6️" },
+  { t:"Geocaching scavenger hunt", b:"Follow the app to caches hidden around town. Leave something behind for whoever's next.", v:"outdoors", budget:0, setting:"outdoors", time:"day", em:"\U0001F9ED" },
+  { t:"Firepit and a long conversation", b:"Marshmallows, no agenda, and take turns finishing “I never told you that…”", v:"outdoors", budget:1, setting:"outdoors", time:"late", em:"\U0001F525" },
+  { t:"Golden-hour photo walk", b:"Wander the neighborhood in the best light of the day, taking turns behind the camera.", v:"outdoors", budget:0, setting:"outdoors", time:"evening", em:"\U0001F4F7" },
+  { t:"Botanical garden or greenhouse", b:"Somewhere green and humid. Each pick the plant you'd be and defend the choice.", v:"outdoors", budget:1, setting:"out", time:"day", em:"\U0001F33F" },
+  { t:"Swim somewhere that isn't a pool", b:"Lake, river, sea, quarry where it's legal. Bring a towel and low expectations about the temperature.", v:"outdoors", budget:0, setting:"outdoors", time:"day", em:"\U0001F3CA" },
+
+  /* ---------- CULTURE ---------- */
+  { t:"Museum, but make it a guessing game", b:"Each secretly pick a favorite as you go, then guess each other's at the exit.", v:"culture", budget:1, setting:"out", time:"day", em:"\U0001F5BC️" },
+  { t:"Blind bookstore swap", b:"Split up, secretly pick a book for the other, wrap it badly, swap over coffee.", v:"culture", budget:1, setting:"out", time:"day", em:"\U0001F4DA" },
+  { t:"Self-guided history walk", b:"Be tourists in your own city. Find the oldest building you can and imagine who lived in it.", v:"culture", budget:0, setting:"out", time:"day", em:"\U0001F3DB️" },
+  { t:"Gallery opening night", b:"Usually free, usually has wine, always has at least one thing worth arguing about.", v:"culture", budget:0, setting:"out", time:"evening", em:"\U0001F942" },
+  { t:"See a play", b:"Fringe theatre counts and is often better. Dress up a bit even if nobody else does.", v:"culture", budget:3, setting:"out", time:"evening", em:"\U0001F3AD" },
+  { t:"Volunteer a shift together", b:"Food bank, shelter, cleanup crew. Do something useful as a team, then go eat.", v:"culture", budget:0, setting:"out", time:"day", em:"\U0001F91D" },
+  { t:"Subtitled film, argue about it after", b:"Something neither of you would pick alone. Dissect it over dessert.", v:"culture", budget:2, setting:"out", time:"evening", em:"\U0001F39E️" },
+  { t:"Record store dig", b:"Twenty minutes each, buy the other one album, no vetoes. Play them both tonight.", v:"culture", budget:2, setting:"out", time:"day", em:"\U0001F4BF" },
+  { t:"Architecture walk with a list", b:"Five buildings you've walked past a hundred times. Actually look up this time.", v:"culture", budget:0, setting:"out", time:"day", em:"\U0001F3D9️" },
+  { t:"A talk on something neither of you knows", b:"A library lecture, a museum evening, a weird meetup. Go in knowing nothing.", v:"culture", budget:0, setting:"out", time:"evening", em:"\U0001F393" },
+
+  /* ---------- ADVENTURE ---------- */
+  { t:"Explore a town you've never visited", b:"Somewhere 30–60 minutes out. No itinerary. Ask a local for their one must-do and do it.", v:"adventure", budget:2, setting:"out", time:"day", em:"\U0001F5FA️" },
+  { t:"Do the ride you'd normally skip", b:"The coaster, the rock wall, the thing that looks like a bad idea. Hold hands the whole time.", v:"adventure", budget:2, setting:"out", time:"day", em:"\U0001F3A2" },
+  { t:"Climbing gym intro session", b:"Day passes and rented shoes. Bouldering's less intimidating than the ropes if it's your first go.", v:"adventure", budget:2, setting:"out", time:"evening", em:"\U0001F9D7" },
+  { t:"Coin-flip road trip", b:"Full tank, two hours, heads left and tails right at every junction. See where you end up.", v:"adventure", budget:2, setting:"out", time:"day", em:"\U0001FA99" },
+  { t:"Thrift-store outfit challenge", b:"$15 each, twenty minutes, dress the other person head to toe. Wear it to dinner after.", v:"adventure", budget:1, setting:"out", time:"day", em:"\U0001F457" },
+  { t:"One-day lesson in something new", b:"Surfing, pottery, skating, archery. One afternoon, both beginners, zero dignity.", v:"adventure", budget:3, setting:"out", time:"day", em:"\U0001F3C4" },
+  { t:"Hot springs or an unusual soak", b:"Natural spring, bathhouse, rooftop pool. Somewhere warm where phones can't come.", v:"adventure", budget:2, setting:"out", time:"evening", em:"♨️" },
+  { t:"Take the train to the end of the line", b:"Ride it all the way out, see what's there, eat something, ride back.", v:"adventure", budget:1, setting:"out", time:"day", em:"\U0001F689" },
+  { t:"Overnight within two hours of home", b:"Cheapest decent room you can find somewhere you've never slept. Leave Saturday, back Sunday.", v:"adventure", budget:3, setting:"out", time:"day", em:"\U0001F9F3" },
+  { t:"Say yes to the first thing you see", b:"Walk out the door and commit to the first flyer, sign or open door that catches your eye.", v:"adventure", budget:1, setting:"out", time:"evening", em:"⚡" },
+
+  /* ---------- ROMANCE ---------- */
+  { t:"Recreate your first date", b:"Same place if it's still standing. Order what you ordered. Say what you remember that the other forgot.", v:"romance", budget:2, setting:"out", time:"evening", em:"\U0001F49E" },
+  { t:"Candlelit dinner you cook together", b:"Real candles, proper tablecloth, a recipe slightly above your skill level. Dress up anyway.", v:"romance", budget:2, setting:"home", time:"evening", em:"\U0001F56F️" },
+  { t:"The question jar", b:"Write deep ones and stupid ones on paper, take turns pulling. Nothing is off-limits.", v:"romance", budget:0, setting:"home", time:"evening", em:"\U0001FAD9" },
+  { t:"Letters to open next year", b:"One each, sealed tonight, hidden somewhere safe. Add a photo from today inside.", v:"romance", budget:0, setting:"home", time:"evening", em:"\U0001F48C" },
+  { t:"Slow dance in the kitchen", b:"One song, lights low, whatever you're wearing. That's the entire date.", v:"romance", budget:0, setting:"home", time:"late", em:"\U0001F3B5" },
+  { t:"Make each other a playlist", b:"Eight songs each with a reason for every one, then listen to both back to back.", v:"romance", budget:0, setting:"home", time:"evening", em:"\U0001F3A7" },
+  { t:"Go through old photos together", b:"Phones out for once. Scroll back years and tell the stories behind them.", v:"romance", budget:0, setting:"home", time:"evening", em:"\U0001F4F8" },
+  { t:"Trade massages, no clock", b:"Ten minutes each, except nobody's counting and nobody's rushing.", v:"romance", budget:0, setting:"home", time:"late", em:"\U0001F486" },
+  { t:"Stay up until it gets light", b:"No plan, no screens. Just keep talking and see if you make it to the sunrise.", v:"romance", budget:0, setting:"home", time:"late", em:"\U0001F317" },
+  { t:"Handwritten menu, dressed up, at home", b:"Three courses, a menu you wrote out by hand, and the good plates. Restaurant rules apply.", v:"romance", budget:2, setting:"home", time:"evening", em:"\U0001F4DC" },
+  { t:"Go back to where you said it first", b:"Wherever one of you said it first. Stand there a minute and then go get something to eat.", v:"romance", budget:1, setting:"out", time:"evening", em:"\U0001F4CD" },
+  { t:"Blindfold taste test", b:"Five things each from the kitchen. Guess them blind. It gets competitive faster than you'd think.", v:"romance", budget:1, setting:"home", time:"evening", em:"\U0001FAF6" },
 ];
 
 /* Sample finds so the Finds tab shows what a real sweep looks like
    before a backend is connected. Clearly flagged as examples. */
 const SAMPLE_FINDS = [
-  { id:"s1", title:"The observatory is free on weeknights and nearly empty", blurb:"Everyone goes on weekends. Show up on a Tuesday around 8 and you'll basically have the telescope to yourselves — the volunteers will talk your ear off about whatever's visible.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"outdoorsy", budget:0, setting:"outdoors", time_of_day:"late", sample:true },
-  { id:"s2", title:"Ride the ferry back and forth at sunset with takeout", blurb:"It's technically transit so it costs almost nothing. Grab something to eat first, sit on the top deck, and just do the round trip twice.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"romantic", budget:1, setting:"outdoors", time_of_day:"evening", sample:true },
-  { id:"s3", title:"Pottery studios do walk-in date nights midweek", blurb:"Most places quietly run two-hour wheel sessions that don't need a booking on slow nights. You'll both be terrible and it's a great time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"playful", budget:2, setting:"out", time_of_day:"evening", sample:true },
-  { id:"s4", title:"The old cemetery does lantern history tours in the fall", blurb:"Sounds morbid, is actually lovely — small groups, genuinely good storytelling, and you end up somewhere warm for cider after.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"cultured", budget:1, setting:"outdoors", time_of_day:"late", sample:true },
-  { id:"s5", title:"Hit the international grocery and cook whatever you can't identify", blurb:"Give yourselves $20 each, one aisle you've never shopped, and no Googling until you're home. Genuinely the most fun we've had all year.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"foodie", budget:1, setting:"home", time_of_day:"evening", sample:true },
-  { id:"s6", title:"Climbing gyms have cheap intro passes and nobody cares if you're bad", blurb:"Two-for-one day passes plus shoe rental runs about $30 total. Bouldering is way less intimidating than the rope walls if it's your first time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"adventurous", budget:2, setting:"out", time_of_day:"evening", sample:true },
+  { id:"s1", title:"The observatory is free on weeknights and nearly empty", blurb:"Everyone goes on weekends. Show up on a Tuesday around 8 and you'll basically have the telescope to yourselves — the volunteers will talk your ear off about whatever's visible.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"outdoors", budget:0, setting:"outdoors", time_of_day:"late", sample:true },
+  { id:"s2", title:"Ride the ferry back and forth at sunset with takeout", blurb:"It's technically transit so it costs almost nothing. Grab something to eat first, sit on the top deck, and just do the round trip twice.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"romance", budget:1, setting:"outdoors", time_of_day:"evening", sample:true },
+  { id:"s3", title:"Pottery studios do walk-in date nights midweek", blurb:"Most places quietly run two-hour wheel sessions that don't need a booking on slow nights. You'll both be terrible and it's a great time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"games", budget:2, setting:"out", time_of_day:"evening", sample:true },
+  { id:"s4", title:"The old cemetery does lantern history tours in the fall", blurb:"Sounds morbid, is actually lovely — small groups, genuinely good storytelling, and you end up somewhere warm for cider after.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"culture", budget:1, setting:"outdoors", time_of_day:"late", sample:true },
+  { id:"s5", title:"Hit the international grocery and cook whatever you can't identify", blurb:"Give yourselves $20 each, one aisle you've never shopped, and no Googling until you're home. Genuinely the most fun we've had all year.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"food", budget:1, setting:"home", time_of_day:"evening", sample:true },
+  { id:"s6", title:"Climbing gyms have cheap intro passes and nobody cares if you're bad", blurb:"Two-for-one day passes plus shoe rental runs about $30 total. Bouldering is way less intimidating than the rope walls if it's your first time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"adventure", budget:2, setting:"out", time_of_day:"evening", sample:true },
 ];
 
 /* ---------- Keys / helpers ---------- */
@@ -554,6 +632,7 @@ const state = {
   myReactions: [],          // [{key,title,blurb,meta,reaction}]
   findsFilter: "all",
   tab: "tonight",
+  demo: false,              // chose "try the demo" instead of signing in
 };
 
 /* ============================================================
@@ -653,8 +732,8 @@ const backendApi = {
     state.coupleId = p?.couple_id;
     state.me = { id: state.user.id, name: p?.display_name || "you", color: p?.color || "indigo", slot: "a" };
 
-    const { data: people } = await state.sb.from("profiles").select("id,display_name,color").eq("couple_id", state.coupleId);
-    const other = (people||[]).find(x => x.id !== state.user.id);
+    const { data: profs } = await state.sb.from("profiles").select("id,display_name,color").eq("couple_id", state.coupleId);
+    const other = (profs||[]).find(x => x.id !== state.user.id);
     state.partner = other ? { id: other.id, name: other.display_name || "your partner", color: other.color || "rose" } : null;
 
     const { data: couple } = await state.sb.from("couples").select("invite_code,city,region,lat,lng,last_sweep_at").eq("id", state.coupleId).single();
@@ -744,10 +823,22 @@ let api = localApi;
 
 /* ---------- Backend config ---------- */
 function getConfig(){
-  if (window.DATE_NIGHT_CONFIG?.supabaseUrl) return window.DATE_NIGHT_CONFIG;
-  return lsGet(LS.cfg, null);
+  const baked = window.HARISHA_CONFIG || window.DATE_NIGHT_CONFIG; // DATE_NIGHT_CONFIG = older name
+  if (baked?.supabaseUrl && !/YOUR-PROJECT-REF/.test(baked.supabaseUrl)) return baked;
+  const saved = lsGet(LS.cfg, null);
+  if (saved?.supabaseUrl) return { ...saved, people: baked?.people || saved.people };
+  return null;
 }
 const backendConfigured = () => !!(getConfig() && window.supabase?.createClient);
+
+// The two people who may sign in. Names come from config.js so the
+// login screen can greet them; the database is what actually enforces
+// the limit. Emails are optional — see config.example.js.
+function people(){
+  const p = getConfig()?.people;
+  if (Array.isArray(p) && p.length) return p;
+  return [{ name:"Harshil", color:"indigo", email:"" }, { name:"Isha", color:"rose", email:"" }];
+}
 
 /* ============================================================
    Card construction + hand dealing
@@ -1203,8 +1294,11 @@ function localSettingsSheet(){
     <div class="field"><button class="btn primary block" id="saveNames">Save names</button></div>
 
     <div class="divider">sync across two phones</div>
-    <p class="sub" style="font-size:14px">Right now everything lives in this browser. Connect a Supabase backend to get real logins, true blind voting, and the live idea scout.</p>
-    <div class="field"><button class="btn block" id="toBackend">Connect a backend →</button></div>
+    ${backendConfigured()
+      ? `<p class="sub" style="font-size:14px">You're in demo mode — nothing here syncs. Sign in to use the real thing.</p>
+         <div class="field"><button class="btn primary block" id="toSignIn">Sign in →</button></div>`
+      : `<p class="sub" style="font-size:14px">Everything lives in this browser right now. Connect a Supabase backend for real logins, enforced-blind voting, and the live idea scout.</p>
+         <div class="field"><button class="btn block" id="toBackend">Connect a backend →</button></div>`}
 
     <div class="settings-row" style="margin-top:14px">
       <div><div class="lbl">Reset everything</div><div class="sub2">Clears both people's votes on this device</div></div>
@@ -1217,7 +1311,8 @@ function localSettingsSheet(){
     d2.people[1].name = $("#nameB").value.trim() || "Person 2";
     saveL(d2); closeSheet(); boot(); toast("Saved ♥");
   });
-  $("#toBackend").addEventListener("click", backendConfigSheet);
+  $("#toBackend")?.addEventListener("click", backendConfigSheet);
+  $("#toSignIn")?.addEventListener("click", authSheet);
   $("#resetAll").addEventListener("click", ()=>{
     if (!confirm("Clear all votes, matches and plans on this device? This can't be undone.")) return;
     saveL(blankLocal()); closeSheet(); boot(); toast("Reset");
@@ -1226,7 +1321,8 @@ function localSettingsSheet(){
 
 function backendConfigSheet(){
   const cfg = lsGet(LS.cfg, {}) || {};
-  const fixed = !!window.DATE_NIGHT_CONFIG?.supabaseUrl;
+  const baked = window.HARISHA_CONFIG || window.DATE_NIGHT_CONFIG;
+  const fixed = !!(baked?.supabaseUrl && !/YOUR-PROJECT-REF/.test(baked.supabaseUrl));
   openSheet(`
     <div class="sheet-head">
       <div><h2>Connect a backend</h2><p>Paste the two values from Supabase → Settings → API. Stored only on this device.</p></div>
@@ -1248,106 +1344,125 @@ function backendConfigSheet(){
   });
 }
 
-function authSheet(mode="signin"){
+/* ---------- Sign in: exactly two accounts ---------- */
+function authSheet(){
+  const ppl = people();
+  const named = ppl.filter(p => p.email);          // one-tap mode
+  const remembered = lsGet("hs_last_person", null);
+
   openSheet(`
     <div class="sheet-head">
-      <div><h2>${mode==="signup"?"Create your account":"Welcome back"}</h2><p>You each sign in with your own email, then link with a code.</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+      <div><h2>Who's this?</h2><p>This site is just for the two of you. Nobody else can make an account.</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">&#10005;</button>
     </div>
-    <div class="tabs2" role="tablist">
-      <button role="tab" id="tabIn" aria-selected="${mode==='signin'}">Sign in</button>
-      <button role="tab" id="tabUp" aria-selected="${mode==='signup'}">Sign up</button>
-    </div>
-    <div id="nameField" class="field" ${mode==='signup'?'':'hidden'}>
-      <label for="dispName">Your name</label><input id="dispName" placeholder="Harshil" autocomplete="name">
-    </div>
-    <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@email.com"></div>
-    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="at least 6 characters"></div>
-    <div class="field"><button class="btn primary block" id="authGo">${mode==="signup"?"Create account":"Sign in"}</button></div>
-    <div id="authMsg"></div>
-    <div class="divider">or</div>
-    <button class="btn ghost block" id="editCfg">Change backend keys</button>
-    <button class="btn ghost block" style="margin-top:8px" id="stayLocal">Keep using local mode</button>
+
+    ${named.length === ppl.length ? `
+      <div class="row2" style="margin-top:16px">
+        ${ppl.map((p,i) => `
+          <button class="btn block" id="pick${i}" data-email="${esc(p.email)}" data-name="${esc(p.name)}"
+            style="flex-direction:column; gap:4px; padding:18px 10px; border-color:${p.color==='rose'?'var(--rose)':'var(--indigo)'}">
+            <span style="font-family:Fraunces,serif;font-size:19px">${esc(p.name)}</span>
+            <span style="font-size:12px;color:var(--muted);font-weight:500">that's me</span>
+          </button>`).join("")}
+      </div>
+      <div id="pwStage"></div>
+    ` : `
+      <div class="field"><label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" placeholder="you@email.com"
+               value="${esc(remembered?.email || "")}"></div>
+      <div class="field"><label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" placeholder="your password"></div>
+      <div class="field"><button class="btn primary block" id="authGo">Sign in</button></div>
+      <div id="authMsg"></div>
+      <div class="notice info">First time? Create the two accounts in Supabase &rarr; Authentication &rarr; Users,
+        using the same addresses you put in <code>supabase-schema.sql</code>.</div>
+    `}
+
+    <div class="divider">no account needed</div>
+    <button class="btn ghost block" id="tryDemo">Try the demo on this device</button>
   `);
-  $("#tabIn").addEventListener("click", ()=>authSheet("signin"));
-  $("#tabUp").addEventListener("click", ()=>authSheet("signup"));
-  $("#editCfg").addEventListener("click", backendConfigSheet);
-  $("#stayLocal").addEventListener("click", ()=>{ closeSheet(); });
-  $("#authGo").addEventListener("click", ()=>doAuth(mode));
-  $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") doAuth(mode); });
+
+  $("#tryDemo").addEventListener("click", ()=>{ state.demo = true; closeSheet(); boot(); });
+
+  if (named.length === ppl.length){
+    ppl.forEach((p,i) => $(`#pick${i}`).addEventListener("click", ()=>passwordStage(p)));
+    if (remembered?.email){
+      const match = ppl.find(p => p.email.toLowerCase() === remembered.email.toLowerCase());
+      if (match) passwordStage(match);
+    }
+  } else {
+    $("#authGo").addEventListener("click", ()=>doAuth($("#email").value.trim(), $("#pw").value));
+    $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") doAuth($("#email").value.trim(), $("#pw").value); });
+  }
 }
 
-async function doAuth(mode){
-  const email = $("#email").value.trim(), pw = $("#pw").value;
-  const name = mode==="signup" ? ($("#dispName")?.value.trim() || "") : "";
+function passwordStage(person){
+  const stage = $("#pwStage");
+  if (!stage) return;
+  stage.innerHTML = `
+    <div class="field" style="margin-top:18px">
+      <label for="pw">${esc(person.name)}&#39;s password</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="password" autofocus>
+    </div>
+    <div class="field"><button class="btn primary block" id="authGo">Sign in as ${esc(person.name)}</button></div>
+    <div id="authMsg"></div>`;
+  const go = () => doAuth(person.email, $("#pw").value);
+  $("#authGo").addEventListener("click", go);
+  $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  $("#pw").focus();
+}
+
+async function doAuth(email, pw){
   const msg = $("#authMsg"), btn = $("#authGo");
-  if (!email || !pw){ msg.innerHTML = `<div class="notice err">Email and password are required.</div>`; return; }
-  btn.disabled = true; btn.textContent = "…";
+  if (!email || !pw){ if (msg) msg.innerHTML = `<div class="notice err">Enter your password to continue.</div>`; return; }
+  if (btn){ btn.disabled = true; btn.textContent = "Signing in…"; }
   try {
-    const res = mode==="signup"
-      ? await state.sb.auth.signUp({ email, password: pw })
-      : await state.sb.auth.signInWithPassword({ email, password: pw });
+    const res = await state.sb.auth.signInWithPassword({ email, password: pw });
     if (res.error) throw res.error;
-    if (mode==="signup" && !res.data.session){
-      msg.innerHTML = `<div class="notice ok">Account created — confirm via the email Supabase sent, then sign in.</div>`;
-      btn.disabled = false; btn.textContent = "Create account"; return;
-    }
     state.user = res.data.user;
-    if (name) await state.sb.rpc("bootstrap_profile", { p_name: name, p_color: null });
-    closeSheet(); await boot(); toast("Signed in ♥");
+    lsSet("hs_last_person", { email });
+    state.demo = false;
+    closeSheet();
+    await boot();
+    toast("Welcome back ♥");
   } catch(e){
     const net = /fetch|network|failed to fetch/i.test(e.message || "");
-    msg.innerHTML = `<div class="notice err">${esc(net
-      ? "Couldn't reach the backend from here. The sandboxed preview blocks external databases — this works on your own hosted copy. Local mode still works fine."
-      : (e.message || "Something went wrong."))}</div>`;
-    btn.disabled = false; btn.textContent = mode==="signup" ? "Create account" : "Sign in";
+    if (msg) msg.innerHTML = `<div class="notice err">${esc(net
+      ? "Can't reach the database from here. The preview sandbox blocks outside connections — this works on the real hosted site. Try the demo instead."
+      : (e.message || "That didn't work."))}</div>`;
+    if (btn){ btn.disabled = false; btn.textContent = "Sign in"; }
   }
 }
 
 function accountSheet(){
-  const linked = !!state.partner;
   openSheet(`
     <div class="sheet-head">
-      <div><h2>${esc(state.me?.name || "Your account")}</h2><p>${linked ? `Linked with ${esc(state.partner.name)} ♥` : "Not linked with your partner yet"}</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+      <div><h2>${esc(state.me?.name || "Your account")}</h2>
+        <p>${state.partner ? `Paired with ${esc(state.partner.name)} &#9829;` : "Your partner hasn't signed in yet"}</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">&#10005;</button>
     </div>
-    ${linked ? `<div class="notice ok">Your votes stay private. Only ideas you've <em>both</em> judged show up in Consensus.</div>` : `
-      <div class="field"><label>Your invite code — send it to your partner</label>
-        <div class="code-badge">${esc(state.inviteCode || "…")}</div></div>
-      <div class="divider">or enter theirs</div>
-      <div class="field"><label for="joinCode">Partner's code</label><input id="joinCode" placeholder="ABC123" style="text-transform:uppercase"></div>
-      <div class="field"><button class="btn primary block" id="joinBtn">Link our accounts</button></div>
-      <div id="joinMsg"></div>`}
+    <div class="notice ok">Your votes are private. An idea only shows up in Consensus once you&#39;ve <em>both</em> judged it.</div>
     <div class="settings-row" style="margin-top:16px">
       <div><div class="lbl">Your area</div><div class="sub2">${esc(state.area?.city || "not set")}</div></div>
       <button class="btn ghost sm" id="areaFromMenu">Change</button>
     </div>
     <div class="settings-row">
-      <div><div class="lbl">Sign out</div><div class="sub2">back to local mode on this device</div></div>
+      <div><div class="lbl">Sign out</div><div class="sub2">on this device</div></div>
       <button class="btn ghost sm" id="signOut">Sign out</button>
     </div>
+    <div class="settings-row">
+      <div><div class="lbl">Backend keys</div><div class="sub2">Supabase project this site talks to</div></div>
+      <button class="btn ghost sm" id="editCfg2">Edit</button>
+    </div>
   `);
-  if (!linked){
-    $("#joinBtn").addEventListener("click", async ()=>{
-      const code = $("#joinCode").value.trim().toUpperCase();
-      if (!code) return;
-      const btn = $("#joinBtn"); btn.disabled = true; btn.textContent = "Linking…";
-      try {
-        const { error } = await state.sb.rpc("join_couple", { p_code: code });
-        if (error) throw error;
-        closeSheet(); await boot(); toast("Linked ♥");
-      } catch(e){
-        $("#joinMsg").innerHTML = `<div class="notice err">${esc(e.message || "Couldn't link — check the code.")}</div>`;
-        btn.disabled = false; btn.textContent = "Link our accounts";
-      }
-    });
-  }
   $("#areaFromMenu").addEventListener("click", areaSheet);
+  $("#editCfg2").addEventListener("click", backendConfigSheet);
   $("#signOut").addEventListener("click", async ()=>{
     try { await state.sb.auth.signOut(); } catch {}
-    state.user = null; state.sb = null; closeSheet(); await boot(); toast("Signed out");
+    state.user = null; state.demo = false; closeSheet(); await boot(); toast("Signed out");
   });
 }
+
 
 /* ---------- Pass-the-phone curtain (local mode) ---------- */
 function handOff(toSlot){
@@ -1405,7 +1520,9 @@ function renderHeader(){
       handOff(b.dataset.slot);
     }));
     document.documentElement.setAttribute("data-person", d.active);
-    $("#whoLine").textContent = `${state.me?.name || "?"}'s turn · pass-the-phone mode`;
+    $("#whoLine").textContent = backendConfigured()
+      ? `${state.me?.name || "?"}'s turn · demo, not synced`
+      : `${state.me?.name || "?"}'s turn · pass-the-phone mode`;
   } else {
     sw.hidden = true;
     // signed-in partners each carry their own accent
@@ -1432,6 +1549,25 @@ async function refreshDerived(){
   state.progress = await api.progress();
 }
 
+/* The front door. Shown when the site has a backend but nobody is
+   signed in — so a stranger who finds the URL sees this, not your deck. */
+function lockScreen(){
+  const ppl = people();
+  $("#curtainRoot").innerHTML = `
+    <div class="curtain">
+      <div class="inner">
+        <div class="big" aria-hidden="true">&#9829;</div>
+        <h2>Harisha</h2>
+        <p>A date planner built for exactly two people &mdash;
+           ${esc(ppl.map(p=>p.name).join(" and "))}. Everyone else is just visiting.</p>
+        <button class="btn primary block" id="lockIn">Sign in</button>
+        <button class="btn ghost block" style="margin-top:9px" id="lockDemo">Have a look around instead</button>
+      </div>
+    </div>`;
+  $("#lockIn").addEventListener("click", authSheet);
+  $("#lockDemo").addEventListener("click", ()=>{ state.demo = true; $("#curtainRoot").innerHTML=""; boot(); });
+}
+
 async function boot(){
   applyTheme(lsGet(LS.theme, "system"));
 
@@ -1445,16 +1581,21 @@ async function boot(){
         if (data?.session){ state.user = data.session.user; state.mode = "backend"; api = backendApi; }
       } catch { /* stay local */ }
     }
+    // Configured but signed out: hold at the front door unless they
+    // deliberately asked for the demo.
+    if (!state.user && !state.demo){ lockScreen(); return; }
   }
+
+  $("#curtainRoot").innerHTML = "";
 
   try {
     await api.init();
   } catch (e) {
     // Backend unreachable (sandboxed preview, bad keys, schema not run) — degrade gracefully.
-    console.warn("backend init failed, falling back to local", e);
-    state.mode = "local"; api = localApi; state.user = null;
+    console.warn("backend init failed, falling back to demo", e);
+    state.mode = "local"; api = localApi; state.user = null; state.demo = true;
     await api.init();
-    toast("Backend unreachable — running in local mode");
+    toast("Can't reach the database — showing the demo instead");
   }
 
   await refreshDerived();

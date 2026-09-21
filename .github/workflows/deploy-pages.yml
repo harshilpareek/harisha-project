@@ -1,0 +1,49 @@
+name: Deploy Harisha to GitHub Pages
+
+# Publishes the site at https://<user>.github.io/<repo>/
+#
+# `configure-pages` has `enablement: true`, so this turns GitHub Pages
+# ON by itself the first time it runs — no dashboard toggle needed.
+# If that step fails, Pages just needs enabling once by hand:
+#   Settings -> Pages -> Source: GitHub Actions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Turn on Pages (and get the site URL)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # The app lives in date-night/, but we publish that folder as the
+      # site root so the public URL stays clean.
+      - name: Package the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./date-night
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
