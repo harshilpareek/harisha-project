@@ -1,0 +1,9 @@
+# Local backend keys — never commit these
+date-night/config.js
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
