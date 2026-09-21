@@ -1,6 +1,6 @@
 # Projects
 
-### 💞 [Date Deck](./date-night/) — a date-idea generator for two
-Draw a card, save the keepers, and (with a free Supabase backend) sync your
-saved deck between both your phones. See [`date-night/`](./date-night/) for the
-app and setup guide.
+### 💞 [Harisha](./date-night/) — a date planner for two
+You each vote on date ideas in secret; whatever you both say yes to becomes a
+match. A background scout sweeps Reddit and local blogs for unusual ideas near
+you. See [`date-night/`](./date-night/) for the app and setup guide.

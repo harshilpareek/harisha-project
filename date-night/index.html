@@ -1,9 +1,8 @@
-<title>Date Deck</title>
-<meta name="description" content="A private date-idea generator for two — draw a card, save your favorites, sync between you both." />
+<title>Harisha</title>
+<meta name="description" content="A private date planner for two — vote blind, find your matches, and let the web scout local ideas for you." />
 
-<!-- Optional self-host backend config (create date-night/config.js from config.example.js). Harmless if absent. -->
+<!-- Optional self-host backend config (copy config.example.js -> config.js). Harmless if absent. -->
 <script src="config.js" onerror="void 0"></script>
-<!-- Supabase client (only used when a backend is configured; blocked/ignored in local mode) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,265 +13,305 @@
   :root {
     --bg: #FBF4F5;
     --bg-glow: radial-gradient(1200px 600px at 50% -10%, #FCE7DE 0%, rgba(252,231,222,0) 60%),
-               radial-gradient(900px 500px at 90% 10%, #F6E1EC 0%, rgba(246,225,236,0) 55%);
+               radial-gradient(900px 500px at 90% 8%, #F1E3F2 0%, rgba(241,227,242,0) 55%);
     --surface: #FFFFFF;
-    --surface-2: #FBEEF1;
+    --surface-2: #FAEEF1;
     --ink: #2C1E2C;
     --muted: #856E7F;
-    --accent: #DC3F6B;
+    --line: #EEDCE2;
+
+    --rose: #DC3F6B;
+    --indigo: #5B74F5;
+    --accent: var(--rose);
     --accent-ink: #FFFFFF;
     --accent-2: #E8843C;
     --good: #2E9E6B;
-    --line: #EEDCE2;
-    --shadow: 0 18px 50px -22px rgba(60,20,45,0.35);
-    --shadow-soft: 0 6px 20px -12px rgba(60,20,45,0.30);
+    --warn: #D98324;
+
+    --shadow: 0 18px 50px -22px rgba(60,20,45,0.32);
+    --shadow-soft: 0 6px 20px -12px rgba(60,20,45,0.28);
     --radius: 20px;
-    --maxw: 720px;
+    --maxw: 680px;
     color-scheme: light;
   }
   :root:not([data-theme="light"]) {
     @media (prefers-color-scheme: dark) {
-      --bg: #160F1B;
-      --bg-glow: radial-gradient(1100px 560px at 50% -12%, rgba(220,63,107,0.18) 0%, rgba(22,15,27,0) 60%),
-                 radial-gradient(900px 480px at 88% 6%, rgba(232,132,60,0.14) 0%, rgba(22,15,27,0) 55%);
-      --surface: #221829;
-      --surface-2: #2C2033;
+      --bg: #150F1A;
+      --bg-glow: radial-gradient(1100px 560px at 50% -12%, rgba(220,63,107,0.16) 0%, rgba(21,15,26,0) 60%),
+                 radial-gradient(900px 480px at 88% 6%, rgba(91,116,245,0.14) 0%, rgba(21,15,26,0) 55%);
+      --surface: #211829;
+      --surface-2: #2B2033;
       --ink: #F6EAEE;
       --muted: #AE99A9;
-      --accent: #FF6E8E;
-      --accent-ink: #23121A;
+      --line: #362A3E;
+      --rose: #FF6E8E;
+      --indigo: #8FA3FF;
+      --accent-ink: #1B1020;
       --accent-2: #FFAE6A;
       --good: #63D19B;
-      --line: #362A3E;
+      --warn: #F0B15E;
       --shadow: 0 22px 60px -26px rgba(0,0,0,0.7);
       --shadow-soft: 0 8px 26px -16px rgba(0,0,0,0.6);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #160F1B;
-    --bg-glow: radial-gradient(1100px 560px at 50% -12%, rgba(220,63,107,0.18) 0%, rgba(22,15,27,0) 60%),
-               radial-gradient(900px 480px at 88% 6%, rgba(232,132,60,0.14) 0%, rgba(22,15,27,0) 55%);
-    --surface: #221829;
-    --surface-2: #2C2033;
+    --bg: #150F1A;
+    --bg-glow: radial-gradient(1100px 560px at 50% -12%, rgba(220,63,107,0.16) 0%, rgba(21,15,26,0) 60%),
+               radial-gradient(900px 480px at 88% 6%, rgba(91,116,245,0.14) 0%, rgba(21,15,26,0) 55%);
+    --surface: #211829;
+    --surface-2: #2B2033;
     --ink: #F6EAEE;
     --muted: #AE99A9;
-    --accent: #FF6E8E;
-    --accent-ink: #23121A;
+    --line: #362A3E;
+    --rose: #FF6E8E;
+    --indigo: #8FA3FF;
+    --accent-ink: #1B1020;
     --accent-2: #FFAE6A;
     --good: #63D19B;
-    --line: #362A3E;
+    --warn: #F0B15E;
     --shadow: 0 22px 60px -26px rgba(0,0,0,0.7);
     --shadow-soft: 0 8px 26px -16px rgba(0,0,0,0.6);
     color-scheme: dark;
   }
+  /* Whose perspective is active recolors the whole app */
+  :root[data-person="a"] { --accent: var(--indigo); }
+  :root[data-person="b"] { --accent: var(--rose); }
 
   * { box-sizing: border-box; }
   html, body { min-height: 100%; }
   body {
-    margin: 0;
-    background: var(--bg);
-    background-image: var(--bg-glow);
-    background-attachment: fixed;
-    color: var(--ink);
-    font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    margin: 0; background: var(--bg); background-image: var(--bg-glow); background-attachment: fixed;
+    color: var(--ink); font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
   }
   .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding-left: 18px; padding-right: 18px; }
+  [hidden] { display: none !important; }
 
   /* ---------- Header ---------- */
   header.bar {
     position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 84%, transparent);
+    backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);
   }
-  .bar-inner { display: flex; align-items: center; gap: 12px; padding-block: 12px; }
-  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+  .bar-inner { display: flex; align-items: center; gap: 10px; padding-block: 11px; }
+  .brand { display: flex; align-items: center; gap: 9px; margin-right: auto; min-width: 0; }
   .brand .mark {
-    width: 34px; height: 34px; flex: none; border-radius: 10px;
-    display: grid; place-items: center; color: var(--accent-ink);
-    background: linear-gradient(140deg, var(--accent), var(--accent-2));
-    box-shadow: var(--shadow-soft); font-size: 18px; transform: rotate(-6deg);
+    width: 32px; height: 32px; flex: none; border-radius: 10px; display: grid; place-items: center;
+    color: var(--accent-ink); background: linear-gradient(140deg, var(--indigo), var(--rose));
+    box-shadow: var(--shadow-soft); font-size: 16px; transform: rotate(-6deg);
   }
-  .brand .name { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
-  .brand .who { font-family: "DM Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand .name { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 19px; letter-spacing: -0.01em; line-height: 1.1; }
+  .brand .who { font-family: "DM Mono", ui-monospace, monospace; font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .icon-btn {
     appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-    width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; cursor: pointer;
-    font-size: 17px; transition: transform .15s ease, border-color .15s ease;
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; cursor: pointer; font-size: 16px;
+    transition: transform .15s ease, border-color .15s ease;
   }
   .icon-btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+
+  /* person switcher */
+  .persons { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 999px; border: 1px solid var(--line); }
+  .persons button {
+    appearance: none; border: none; background: transparent; cursor: pointer; width: 30px; height: 30px;
+    border-radius: 999px; font-weight: 700; font-size: 13px; color: var(--muted); font-family: inherit;
+  }
+  .persons button[aria-pressed="true"] { color: #fff; }
+  .persons button.pa[aria-pressed="true"] { background: var(--indigo); }
+  .persons button.pb[aria-pressed="true"] { background: var(--rose); }
 
   /* ---------- Buttons ---------- */
   button { font-family: inherit; }
   .btn {
-    appearance: none; cursor: pointer; border-radius: 14px; border: 1px solid var(--line);
-    background: var(--surface); color: var(--ink); font-weight: 600; font-size: 15px;
-    padding: 11px 16px; display: inline-flex; align-items: center; gap: 8px; justify-content: center;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    appearance: none; cursor: pointer; border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink); font-weight: 600; font-size: 15px; padding: 11px 16px;
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
   }
   .btn:hover { transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-  .btn.primary {
-    background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--accent-2)));
-    color: var(--accent-ink); border-color: transparent; box-shadow: var(--shadow-soft);
-  }
-  .btn.primary:hover { box-shadow: var(--shadow); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; box-shadow: var(--shadow-soft); }
   .btn.ghost { background: transparent; }
   .btn.block { width: 100%; }
-  .btn.lg { padding: 15px 22px; font-size: 16.5px; border-radius: 16px; }
-  .btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, input:focus-visible, a:focus-visible {
+  .btn.sm { padding: 8px 12px; font-size: 13.5px; border-radius: 11px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, .tabbtn:focus-visible {
     outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px;
   }
-  .btn[disabled] { opacity: .5; cursor: not-allowed; transform: none; }
 
-  /* ---------- Filters ---------- */
-  main { padding-bottom: 64px; }
-  .lead { padding-top: 22px; }
-  .eyebrow { font-family: "DM Mono", monospace; text-transform: uppercase; letter-spacing: .14em; font-size: 11.5px; color: var(--accent); font-weight: 500; }
-  h1.title { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(30px, 7vw, 44px); line-height: 1.05; letter-spacing: -0.02em; margin: 8px 0 6px; text-wrap: balance; }
-  .lead p { color: var(--muted); margin: 0; max-width: 52ch; }
+  /* ---------- Tabs (bottom) ---------- */
+  main { padding-bottom: 96px; padding-top: 18px; }
+  nav.tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tabs-inner { display: flex; max-width: var(--maxw); margin: 0 auto; }
+  .tabbtn {
+    flex: 1; appearance: none; border: none; background: transparent; cursor: pointer; color: var(--muted);
+    padding: 9px 4px 11px; display: grid; gap: 2px; justify-items: center; font-size: 10.5px; font-weight: 600;
+    font-family: "DM Mono", monospace; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .tabbtn .ti { font-size: 19px; line-height: 1; }
+  .tabbtn[aria-selected="true"] { color: var(--accent); }
+  .tabbtn .dot { position: absolute; transform: translate(14px,-4px); width: 7px; height: 7px; border-radius: 99px; background: var(--accent-2); }
 
-  .filters { margin-top: 22px; }
-  .filter-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-  .filter-head .label { font-family: "DM Mono", monospace; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .reset { background: none; border: none; color: var(--accent); font-size: 13px; cursor: pointer; font-weight: 600; padding: 2px 4px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    appearance: none; cursor: pointer; border: 1px solid var(--line); background: var(--surface);
-    color: var(--ink); border-radius: 999px; padding: 8px 13px; font-size: 13.5px; font-weight: 600;
-    display: inline-flex; align-items: center; gap: 6px; transition: all .14s ease; line-height: 1;
-  }
-  .chip .em { font-size: 14px; }
-  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-  .chip:not([aria-pressed="true"]):hover { border-color: var(--accent); }
-  .filter-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-  details.more { margin-top: 6px; border-top: 1px dashed var(--line); padding-top: 14px; }
-  details.more > summary { cursor: pointer; list-style: none; color: var(--muted); font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-  details.more > summary::-webkit-details-marker { display: none; }
-  details.more[open] > summary .caret { transform: rotate(90deg); }
-  details.more .caret { transition: transform .15s ease; }
-  .more-body { display: grid; gap: 18px; margin-top: 14px; }
+  /* ---------- Typography bits ---------- */
+  .eyebrow { font-family: "DM Mono", monospace; text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: var(--accent); font-weight: 500; }
+  h1.title { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(26px, 6.2vw, 36px); line-height: 1.08; letter-spacing: -0.02em; margin: 7px 0 6px; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0; max-width: 52ch; font-size: 15px; }
+  h3.sec { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 20px; margin: 0; letter-spacing: -.01em; }
+  .sechead { display: flex; align-items: center; gap: 10px; margin: 28px 0 10px; }
+  .count-pill { font-family: "DM Mono", monospace; font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
 
-  /* ---------- The card ---------- */
-  .stage { margin-top: 26px; perspective: 1400px; }
-  .card {
-    position: relative; background: var(--surface); border: 1px solid var(--line);
-    border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
-    transform-origin: 50% 60%;
+  /* ---------- Vote card ---------- */
+  .stage { margin-top: 18px; perspective: 1400px; }
+  .vcard { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .vcard .ribbon { height: 5px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .vcard-body { padding: 22px 21px 20px; }
+  .srcrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 13px; }
+  .vibe-tag {
+    display: inline-flex; align-items: center; gap: 6px; font-family: "DM Mono", monospace; font-size: 11.5px;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--accent); background: var(--surface-2);
+    border: 1px solid var(--line); padding: 5px 10px; border-radius: 999px;
   }
-  .card::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%);
+  .src-badge {
+    display: inline-flex; align-items: center; gap: 5px; font-family: "DM Mono", monospace; font-size: 11.5px;
+    color: var(--muted); text-decoration: none; border-bottom: 1px dashed var(--line);
   }
-  .card .ribbon { height: 6px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
-  .card-body { padding: 26px 24px 22px; }
-  .card .vibe-tag {
-    display: inline-flex; align-items: center; gap: 7px; font-family: "DM Mono", monospace;
-    font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent);
-    background: var(--surface-2); border: 1px solid var(--line); padding: 6px 11px; border-radius: 999px;
-  }
-  .card h2 {
-    font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(26px, 6.4vw, 38px);
-    line-height: 1.08; letter-spacing: -0.02em; margin: 16px 0 10px; text-wrap: balance;
-  }
-  .card .blurb { color: var(--ink); opacity: .92; font-size: 16.5px; margin: 0 0 18px; max-width: 46ch; }
-  .stubs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .stub {
-    font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: .02em; color: var(--muted);
-    border: 1px dashed var(--line); border-radius: 8px; padding: 5px 9px; background: transparent;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
+  .src-badge:hover { color: var(--accent); border-color: var(--accent); }
+  .src-badge.sample { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+  .vcard h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(22px, 5.4vw, 30px); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 10px; text-wrap: balance; }
+  .vcard .blurb { color: var(--ink); opacity: .9; font-size: 15.5px; margin: 0 0 16px; max-width: 46ch; }
+  .stubs { display: flex; flex-wrap: wrap; gap: 7px; }
+  .stub { font-family: "DM Mono", monospace; font-size: 11.5px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px; }
   .stub b { color: var(--ink); font-weight: 500; }
-  .levelup {
-    background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 13px 15px;
-    font-size: 14.5px; color: var(--ink); display: flex; gap: 10px; align-items: flex-start;
+
+  .votes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-top: 18px; }
+  .vote {
+    appearance: none; cursor: pointer; border-radius: 15px; border: 1px solid var(--line); background: var(--surface-2);
+    padding: 13px 8px; display: grid; gap: 3px; justify-items: center; font-weight: 700; font-size: 13px; color: var(--ink);
+    transition: transform .14s ease, background .14s ease, border-color .14s ease;
   }
-  .levelup .k { font-family: "DM Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--accent-2); white-space: nowrap; padding-top: 2px; }
+  .vote .ve { font-size: 21px; line-height: 1; }
+  .vote:hover { transform: translateY(-2px); }
+  .vote.pass:hover { border-color: #C0224B; color: #C0224B; }
+  .vote.maybe:hover { border-color: var(--warn); color: var(--warn); }
+  .vote.yes:hover { border-color: var(--good); color: var(--good); }
 
-  .card-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-top: 20px; }
-  .card-actions .btn.save.saved { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, var(--line)); }
+  .progress { display: flex; gap: 5px; justify-content: center; margin-top: 16px; }
+  .pdot { width: 7px; height: 7px; border-radius: 99px; background: var(--line); }
+  .pdot.done { background: var(--accent); }
+  .pdot.now { background: var(--accent); transform: scale(1.5); }
 
-  @keyframes deal {
-    0%   { opacity: 0; transform: translateY(26px) rotateX(14deg) scale(.97); }
-    60%  { opacity: 1; }
-    100% { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
+  @keyframes deal { 0% { opacity:0; transform: translateY(22px) scale(.97);} 100% { opacity:1; transform:none; } }
+  .vcard.dealing { animation: deal .42s cubic-bezier(.16,.84,.32,1) both; }
+  @keyframes pop { 0%{transform:scale(.8);opacity:0} 60%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+  .match-card { animation: pop .4s cubic-bezier(.16,.84,.32,1) both; }
+  @media (prefers-reduced-motion: reduce) { .vcard.dealing, .match-card { animation: none; } .btn,.vote,.chip,.icon-btn { transition: none; } }
+
+  /* ---------- Generic list rows ---------- */
+  .row {
+    display: flex; align-items: flex-start; gap: 12px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 15px; padding: 13px 14px; box-shadow: var(--shadow-soft);
   }
-  .card.dealing { animation: deal .5s cubic-bezier(.16,.84,.32,1) both; }
-  @media (prefers-reduced-motion: reduce) {
-    .card.dealing { animation: none; }
-    .btn, .chip, .icon-btn { transition: none; }
+  .row .em { font-size: 20px; flex: none; line-height: 1.3; }
+  .row .txt { min-width: 0; flex: 1; }
+  .row .t { font-weight: 600; font-size: 15px; line-height: 1.3; }
+  .row .m { font-family: "DM Mono", monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .list { display: grid; gap: 9px; }
+  .mini { appearance: none; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); cursor: pointer; border-radius: 9px; padding: 0 9px; height: 32px; display: grid; place-items: center; font-size: 13px; flex: none; font-weight: 600; font-family: inherit; }
+  .mini:hover { color: var(--accent); border-color: var(--accent); }
+  .empty { text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px; padding: 24px 18px; font-size: 14.5px; }
+
+  /* ---------- Match cards ---------- */
+  .match {
+    position: relative; background: var(--surface); border: 1px solid color-mix(in srgb, var(--good) 35%, var(--line));
+    border-radius: 17px; padding: 16px; box-shadow: var(--shadow-soft); overflow: hidden;
   }
+  .match::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--good); }
+  .match.talk { border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+  .match.talk::before { background: var(--warn); }
+  .match h4 { font-family:"Fraunces",serif; font-weight:600; font-size:18px; margin:0 0 5px; line-height:1.2; letter-spacing:-.01em; }
+  .match p { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+  .verdict { display:flex; gap:7px; flex-wrap: wrap; align-items:center; margin-bottom: 10px; }
+  .vpill { font-family:"DM Mono",monospace; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--line); color: var(--muted); }
+  .vpill.a { border-color: color-mix(in srgb, var(--indigo) 45%, var(--line)); color: var(--indigo); }
+  .vpill.b { border-color: color-mix(in srgb, var(--rose) 45%, var(--line)); color: var(--rose); }
 
-  .draw-again { margin-top: 16px; }
-
-  /* ---------- Saved ---------- */
-  .saved-section { margin-top: 40px; }
-  .section-title { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-  .section-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 22px; margin: 0; letter-spacing: -.01em; }
-  .count-pill { font-family: "DM Mono", monospace; font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
-  .saved-hint { color: var(--muted); font-size: 14px; margin: 6px 0 16px; }
-  .saved-list { display: grid; gap: 10px; }
-  .saved-item {
-    display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line);
-    border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow-soft);
+  /* ---------- Plan banner ---------- */
+  .plan {
+    background: linear-gradient(140deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 18px; padding: 18px; box-shadow: var(--shadow-soft);
   }
-  .saved-item.done { opacity: .62; }
-  .saved-item .em { font-size: 20px; flex: none; }
-  .saved-item .txt { min-width: 0; flex: 1; }
-  .saved-item .t { font-weight: 600; font-size: 15px; }
-  .saved-item.done .t { text-decoration: line-through; }
-  .saved-item .m { font-family: "DM Mono", monospace; font-size: 11.5px; color: var(--muted); }
-  .mini { appearance: none; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); cursor: pointer; border-radius: 9px; width: 34px; height: 34px; display: grid; place-items: center; font-size: 15px; flex: none; }
-  .mini:hover { color: var(--ink); border-color: var(--accent); }
-  .mini.done-btn:hover { color: var(--good); }
-  .empty { text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px; padding: 26px 18px; font-size: 14.5px; }
+  .plan .k { font-family:"DM Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; color: var(--accent); }
+  .plan h2 { font-family:"Fraunces",serif; font-weight:600; font-size:clamp(20px,5vw,26px); margin:7px 0 4px; line-height:1.15; letter-spacing:-.02em; }
+  .plan .when { font-family:"DM Mono",monospace; font-size:12.5px; color: var(--muted); }
+  .plan .acts { display:flex; gap:8px; margin-top: 13px; flex-wrap: wrap; }
 
-  footer.foot { text-align: center; color: var(--muted); font-size: 12.5px; padding: 30px 0 10px; font-family: "DM Mono", monospace; }
-  footer.foot a { color: var(--accent); text-decoration: none; }
+  /* ---------- Taste bars ---------- */
+  .taste { display: grid; gap: 8px; }
+  .tbar { display: grid; grid-template-columns: 96px 1fr 34px; align-items: center; gap: 10px; }
+  .tbar .lb { font-size: 13px; font-weight: 600; display:flex; align-items:center; gap:6px; }
+  .tbar .track { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+  .tbar .fill { height: 100%; border-radius: 99px; background: var(--accent); }
+  .tbar .pc { font-family:"DM Mono",monospace; font-size:11.5px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .tbar.dual .fill.a { background: var(--indigo); }
+  .tbar.dual .fill.b { background: var(--rose); }
+  .stack { display:grid; gap:3px; }
 
-  /* ---------- Sheet / modal ---------- */
-  .scrim { position: fixed; inset: 0; background: rgba(20,8,16,0.5); backdrop-filter: blur(3px); z-index: 50; display: grid; place-items: end center; }
+  /* ---------- Stat tiles ---------- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 13px 12px; text-align: center; }
+  .stat .n { font-family: "Fraunces", serif; font-size: 25px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .l { font-family: "DM Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 5px; }
+
+  /* ---------- Sheets ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(18,7,15,0.55); backdrop-filter: blur(3px); z-index: 60; display: grid; place-items: end center; }
   .sheet {
     width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--line);
     border-radius: 22px 22px 0 0; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto;
-    padding: 22px 20px calc(24px + env(safe-area-inset-bottom, 0px)); animation: rise .28s cubic-bezier(.16,.84,.32,1) both;
+    padding: 21px 19px calc(24px + env(safe-area-inset-bottom, 0px)); animation: rise .26s cubic-bezier(.16,.84,.32,1) both;
   }
   @media (min-width: 560px) { .scrim { place-items: center; } .sheet { border-radius: 22px; } }
-  @keyframes rise { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes rise { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
-  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-  .sheet-head h2 { font-family: "Fraunces", serif; font-weight: 600; font-size: 24px; margin: 0; letter-spacing: -.01em; }
+  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .sheet-head h2 { font-family: "Fraunces", serif; font-weight: 600; font-size: 23px; margin: 0; letter-spacing: -.01em; }
   .sheet-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-  .field { margin-top: 16px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
-  .field input {
+  .field { margin-top: 15px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field input, .field select {
     width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
     background: var(--surface-2); color: var(--ink); font-size: 16px; font-family: inherit;
   }
   .field .hintline { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
-  .tabs { display: flex; gap: 6px; background: var(--surface-2); padding: 5px; border-radius: 14px; margin-top: 4px; }
-  .tabs button { flex: 1; border: none; background: transparent; color: var(--muted); font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer; font-size: 14px; }
-  .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-soft); }
-  .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 20px 0 4px; font-family: "DM Mono", monospace; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tabs2 { display: flex; gap: 6px; background: var(--surface-2); padding: 5px; border-radius: 14px; margin-top: 4px; }
+  .tabs2 button { flex: 1; border: none; background: transparent; color: var(--muted); font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer; font-size: 14px; font-family: inherit; }
+  .tabs2 button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-soft); }
+  .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 11.5px; margin: 18px 0 4px; font-family: "DM Mono", monospace; }
   .divider::before, .divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
-  .notice { border-radius: 12px; padding: 10px 13px; font-size: 13.5px; margin-top: 14px; border: 1px solid; }
+  .notice { border-radius: 12px; padding: 10px 13px; font-size: 13.5px; margin-top: 13px; border: 1px solid; }
   .notice.err { color: #C0224B; border-color: color-mix(in srgb, #C0224B 40%, var(--line)); background: color-mix(in srgb, #C0224B 8%, var(--surface)); }
   .notice.ok { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--line)); background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
   .notice.info { color: var(--muted); border-color: var(--line); background: var(--surface-2); }
-  .code-badge { font-family: "DM Mono", monospace; font-size: 20px; letter-spacing: .3em; font-weight: 500; color: var(--accent); background: var(--surface-2); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; text-align: center; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .notice.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); background: color-mix(in srgb, var(--warn) 10%, var(--surface)); }
+  .code-badge { font-family: "DM Mono", monospace; font-size: 19px; letter-spacing: .3em; font-weight: 500; color: var(--accent); background: var(--surface-2); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; text-align: center; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
   .settings-row:last-child { border-bottom: none; }
   .settings-row .lbl { font-weight: 600; font-size: 14.5px; }
-  .settings-row .sub { font-size: 12.5px; color: var(--muted); }
+  .settings-row .sub2 { font-size: 12.5px; color: var(--muted); }
 
-  /* toast */
-  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; box-shadow: var(--shadow); z-index: 60; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+  /* handoff curtain */
+  .curtain { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--bg); background-image: var(--bg-glow); padding: 24px; text-align: center; }
+  .curtain .inner { max-width: 340px; }
+  .curtain .big { font-size: 54px; margin-bottom: 12px; }
+  .curtain h2 { font-family: "Fraunces", serif; font-weight: 600; font-size: 28px; margin: 0 0 8px; letter-spacing: -.02em; }
+  .curtain p { color: var(--muted); margin: 0 0 22px; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; box-shadow: var(--shadow); z-index: 65; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; max-width: 90vw; text-align:center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 
@@ -281,96 +320,124 @@
     <div class="brand">
       <div class="mark" aria-hidden="true">♥</div>
       <div style="min-width:0">
-        <div class="name">Date Deck</div>
-        <div class="who" id="whoLine">just the two of you</div>
+        <div class="name">Harisha</div>
+        <div class="who" id="whoLine">setting up…</div>
       </div>
     </div>
-    <button class="icon-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">◑</button>
-    <button class="icon-btn" id="accountBtn" title="Account & partner" aria-label="Account and partner">☰</button>
+    <div class="persons" id="personSwitch" role="group" aria-label="Whose turn"></div>
+    <button class="icon-btn" id="themeBtn" title="Light / dark" aria-label="Toggle theme">◑</button>
+    <button class="icon-btn" id="menuBtn" title="Settings" aria-label="Settings">☰</button>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="lead">
-    <div class="eyebrow">Your next date, on the house</div>
-    <h1 class="title">Draw a card. Go have a good time.</h1>
-    <p>Tap the vibes you're feeling, deal a date idea, and save the keepers. Sign in to sync your saved deck between the two of you.</p>
-  </section>
+  <!-- ========== TAB: TONIGHT ========== -->
+  <section id="panel-tonight">
+    <div class="eyebrow" id="tonightEyebrow">Your hand · private</div>
+    <h1 class="title" id="tonightTitle">Seven ideas. Yes, maybe, or pass.</h1>
+    <p class="sub" id="tonightSub">Your answers stay hidden until you've both voted on the same idea.</p>
 
-  <section class="filters" aria-label="Filters">
-    <div class="filter-head">
-      <span class="label">What's the mood tonight?</span>
-      <button class="reset" id="resetBtn">Reset</button>
+    <div class="stage" id="voteStage">
+      <article class="vcard" id="vcard">
+        <div class="ribbon"></div>
+        <div class="vcard-body">
+          <div class="srcrow" id="cardSrc"></div>
+          <h2 id="cardTitle">Shuffling…</h2>
+          <p class="blurb" id="cardBlurb"></p>
+          <div class="stubs" id="cardStubs"></div>
+          <div class="votes">
+            <button class="vote pass" id="vPass"><span class="ve" aria-hidden="true">✕</span><span>Pass</span></button>
+            <button class="vote maybe" id="vMaybe"><span class="ve" aria-hidden="true">~</span><span>Maybe</span></button>
+            <button class="vote yes" id="vYes"><span class="ve" aria-hidden="true">♥</span><span>Yes</span></button>
+          </div>
+          <div class="progress" id="progress"></div>
+        </div>
+      </article>
     </div>
-    <div class="chips" id="vibeChips" role="group" aria-label="Vibe"></div>
 
-    <details class="more">
-      <summary><span class="caret">▸</span> Fine-tune budget, setting &amp; time</summary>
-      <div class="more-body">
-        <div>
-          <div class="filter-head"><span class="label">Budget</span></div>
-          <div class="chips" id="budgetChips" role="group" aria-label="Budget"></div>
-        </div>
-        <div>
-          <div class="filter-head"><span class="label">Where</span></div>
-          <div class="chips" id="settingChips" role="group" aria-label="Setting"></div>
-        </div>
-        <div>
-          <div class="filter-head"><span class="label">When</span></div>
-          <div class="chips" id="timeChips" role="group" aria-label="Time of day"></div>
-        </div>
-      </div>
-    </details>
+    <div id="handDone" hidden></div>
+
+    <div class="sechead"><h3 class="sec">Your taste</h3><span class="count-pill" id="tasteCount">0 votes</span></div>
+    <p class="sub" style="margin-bottom:12px">Built from your own votes — your partner never sees this.</p>
+    <div class="taste" id="tasteBars"></div>
   </section>
 
-  <section class="stage" aria-live="polite">
-    <article class="card" id="card">
-      <div class="ribbon"></div>
-      <div class="card-body">
-        <span class="vibe-tag" id="cardVibe"><span class="em">✨</span> <span>loading</span></span>
-        <h2 id="cardTitle">Warming up the deck…</h2>
-        <p class="blurb" id="cardBlurb"></p>
-        <div class="stubs" id="cardStubs"></div>
-        <div class="levelup" id="cardLevelup" hidden>
-          <span class="k">Level&nbsp;up</span>
-          <span id="cardLevelupText"></span>
-        </div>
-        <div class="card-actions">
-          <button class="btn primary" id="drawBtn">🂠 Deal another</button>
-          <button class="btn save" id="saveBtn" title="Save to your deck">♡ Save</button>
-          <button class="btn ghost" id="doneBtn" title="We did this one" aria-label="Mark as done">✓</button>
-        </div>
-      </div>
-    </article>
+  <!-- ========== TAB: CONSENSUS ========== -->
+  <section id="panel-consensus" hidden>
+    <div class="eyebrow">The reveal</div>
+    <h1 class="title">Where you two line up.</h1>
+    <p class="sub">An idea shows up here only once you've <em>both</em> voted on it.</p>
+
+    <div style="margin-top:18px" id="planSlot"></div>
+
+    <div class="stats" style="margin-top:16px" id="statTiles"></div>
+
+    <div class="sechead"><h3 class="sec">It's a match</h3><span class="count-pill" id="matchCount">0</span></div>
+    <div class="list" id="matchList"></div>
+
+    <div class="sechead"><h3 class="sec">Worth a talk</h3><span class="count-pill" id="talkCount">0</span></div>
+    <div class="list" id="talkList"></div>
+
+    <div class="sechead"><h3 class="sec">How you compare</h3></div>
+    <div class="taste" id="compareBars"></div>
+
+    <div class="sechead"><h3 class="sec">Been there, done that</h3><span class="count-pill" id="logCount">0</span></div>
+    <div class="list" id="logList"></div>
   </section>
 
-  <section class="saved-section">
-    <div class="section-title">
-      <h3>Your deck</h3>
-      <span class="count-pill" id="savedCount">0 saved</span>
+  <!-- ========== TAB: FINDS ========== -->
+  <section id="panel-finds" hidden>
+    <div class="eyebrow">Scouted for you</div>
+    <h1 class="title">What the internet says about dates near you.</h1>
+    <p class="sub">A sweep of Reddit threads and local blogs, mined for ideas people actually recommend.</p>
+
+    <div class="row" style="margin-top:18px; align-items:center">
+      <span class="em" aria-hidden="true">📍</span>
+      <div class="txt">
+        <div class="t" id="areaName">No area set</div>
+        <div class="m" id="sweepMeta">Set your area to start scouting</div>
+      </div>
+      <button class="mini" id="areaBtn">Change</button>
     </div>
-    <p class="saved-hint" id="savedHint">Ideas you save show up here — and sync to your partner once you're both signed in.</p>
-    <div class="saved-list" id="savedList"></div>
-  </section>
 
-  <footer class="foot">
-    Made for two · <a href="#" id="footAccount">set up accounts</a>
-  </footer>
+    <div style="display:flex; gap:9px; margin-top:12px">
+      <button class="btn primary" id="sweepBtn" style="flex:1">🛰️ Sweep for new ideas</button>
+      <button class="btn ghost" id="findsFilterBtn">All</button>
+    </div>
+
+    <div class="sechead"><h3 class="sec">Fresh finds</h3><span class="count-pill" id="findsCount">0</span></div>
+    <div class="list" id="findsList"></div>
+  </section>
 </main>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tabbtn" id="tab-tonight" aria-selected="true"><span class="ti" aria-hidden="true">🂠</span><span>Tonight</span></button>
+    <button class="tabbtn" id="tab-consensus" aria-selected="false"><span class="ti" aria-hidden="true">♥</span><span>Consensus</span></button>
+    <button class="tabbtn" id="tab-finds" aria-selected="false"><span class="ti" aria-hidden="true">🛰️</span><span>Finds</span></button>
+  </div>
+</nav>
 
 <div id="toast" class="toast" role="status"></div>
 <div id="sheetRoot"></div>
+<div id="curtainRoot"></div>
 
 <script>
 /* ============================================================
-   Date Deck — a private date-idea generator for two.
-   Runs in LOCAL mode by default (saves on this device).
-   Add Supabase keys (config.js or the settings screen) for
-   real accounts that sync between partners.
+   HARISHA — a two-perspective date planner.
+
+   Modes
+     LOCAL    : both perspectives live on one device ("pass the
+                phone"). No setup, works offline. Default.
+     BACKEND  : Supabase. Separate accounts on separate phones,
+                blind voting enforced by row-level security, plus
+                a scheduled crawler that scouts local ideas.
+
+   The vote is the core primitive. Everything else — matches,
+   taste profiles, the locked-in plan — is derived from votes.
    ============================================================ */
 
-/* ---------- The deck ---------- */
-// budget: 0 free · 1 $ · 2 $$ · 3 $$$   setting: home|out|outdoors   time: any|day|evening|late
+/* ---------- Curated deck (the always-available baseline) ---------- */
 const VIBES = {
   cozy:       { label: "Cozy",        em: "🛋️" },
   adventurous:{ label: "Adventurous", em: "🧭" },
@@ -383,574 +450,1050 @@ const VIBES = {
 };
 
 const DECK = [
-  { t:"Cook a country you've never eaten", b:"Pick a place on the map, find a recipe from it, and make dinner together — bonus points for the playlist.", v:"foodie", budget:1, setting:"home", time:"evening", em:"🌍", up:"Dress the table to match and learn one phrase in the language." },
-  { t:"Sunset picnic, no phones", b:"Grab snacks, a blanket, and a good spot facing west. Phones in the bag until the sun's down.", v:"romantic", budget:1, setting:"outdoors", time:"evening", em:"🌅", up:"Bring a small speaker and one slow song saved for the moment it dips." },
-  { t:"Blind bookstore swap", b:"Split up, secretly pick a book you think the other will love, wrap it, and swap.", v:"cultured", budget:1, setting:"out", time:"day", em:"📚", up:"Read the first page aloud to each other over coffee after." },
-  { t:"Build a pillow fort and stream something bad", b:"The worse the movie, the better. Snacks required, effort optional.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🏰", up:"Rate the movie out of 10 at three checkpoints and see if you agree." },
-  { t:"Golden-hour photo walk", b:"Wander your neighborhood and take turns photographing each other in the best light of the day.", v:"romantic", budget:0, setting:"outdoors", time:"evening", em:"📷", up:"Print your favorite one this week and stick it on the fridge." },
-  { t:"Two-bar cocktail (or mocktail) crawl", b:"One drink each at two spots you've never tried. Compare notes on the walk between.", v:"spontaneous", budget:2, setting:"out", time:"late", em:"🍸", up:"Order the bartender's own favorite, whatever it is." },
-  { t:"Farmers market, then cook the haul", b:"Buy whatever looks best with no plan, then improvise a meal from it back home.", v:"foodie", budget:2, setting:"out", time:"day", em:"🧺", up:"Give yourselves a $25 cap and one 'wildcard' ingredient each." },
-  { t:"Stargazing drive", b:"Head somewhere darker than home, lie back, and find three constellations between you.", v:"outdoorsy", budget:1, setting:"outdoors", time:"late", em:"🌌", up:"Load a star-map app and hunt for a planet you can actually see." },
-  { t:"The 100-question jar", b:"Write deep and silly questions on slips of paper, take turns pulling. No topic off-limits.", v:"romantic", budget:0, setting:"home", time:"evening", em:"🫙", up:"End on: 'what's one thing you want us to do before next year?'" },
-  { t:"Learn a dance from a video", b:"Pick one clip, clear the floor, and don't stop until you get the chorus right.", v:"playful", budget:0, setting:"home", time:"evening", em:"💃", up:"Film the final take — future-you will love it." },
-  { t:"Museum, but make it a game", b:"Each secretly pick a 'favorite' before you leave; guess each other's at the exit.", v:"cultured", budget:1, setting:"out", time:"day", em:"🖼️", up:"Buy a postcard of the piece you guessed right." },
-  { t:"Breakfast for dinner in bed", b:"Pancakes, eggs, the works — at 8pm, in pajamas, tray and all.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🥞", up:"Swap roles: whoever usually cooks gets served tonight." },
-  { t:"Sunrise mission", b:"Set an alarm, grab coffee, and go watch the day start somewhere with a view.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🌄", up:"Reward yourselves with the best breakfast sandwich in town after." },
-  { t:"Thrift-store fit challenge", b:"$15 each, 20 minutes, dress the other person head to toe. Wear it to dinner.", v:"playful", budget:1, setting:"out", time:"day", em:"👗", up:"Winner (voted by a stranger) picks the restaurant." },
-  { t:"Backyard (or living-room) camping", b:"Tent, string lights, ghost stories, and s'mores over the stove if you must.", v:"cozy", budget:1, setting:"home", time:"late", em:"⛺", up:"No screens after the tent zips — just talk until you fall asleep." },
-  { t:"Ramen or taco pilgrimage", b:"Find the most-hyped spot for one food you both love and finally go.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍜", up:"Order one thing you'd never normally get and split it." },
-  { t:"Paint each other (badly)", b:"Cheap canvases, 30-minute timer, portraits of each other. Talent not required.", v:"playful", budget:1, setting:"home", time:"evening", em:"🎨", up:"Hang them somewhere you'll both see them every day." },
-  { t:"Hike to a payoff", b:"Pick a trail that ends in a view, a waterfall, or a swimming hole and earn it.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🥾", up:"Pack one 'summit snack' you only open at the top." },
-  { t:"Recreate your first date", b:"Same place, or as close as you can get. Order what you ordered then.", v:"romantic", budget:2, setting:"out", time:"evening", em:"💞", up:"Tell each other one thing you remember that the other forgot." },
-  { t:"Board-game tournament for stakes", b:"Best of three. Loser owes the winner a favor of the winner's choosing.", v:"playful", budget:0, setting:"home", time:"evening", em:"🎲", up:"Write the favors down now, sealed, no take-backs." },
-  { t:"Late-night diner + drive", b:"Fries at midnight, windows down, the good playlist, nowhere to be.", v:"spontaneous", budget:1, setting:"out", time:"late", em:"🚗", up:"Take turns picking one song each, no skipping allowed." },
-  { t:"Couples' cooking class", b:"Book a real class — pasta, sushi, dumplings — and make a mess together.", v:"foodie", budget:3, setting:"out", time:"evening", em:"👩‍🍳", up:"Recreate the dish at home next week from memory." },
-  { t:"Home spa night", b:"Face masks, warm towels, playlist of rain sounds, phones in another room.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧖", up:"Trade 10-minute shoulder rubs — no clock-watching." },
-  { t:"Bike somewhere new", b:"Ride to a part of town you never go and find lunch you didn't plan.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🚲", up:"Let a coin flip decide left or right at every big intersection." },
-  { t:"Live music, any genre", b:"Cheapest ticket to whatever's on tonight — a bar band counts.", v:"cultured", budget:2, setting:"out", time:"late", em:"🎸", up:"Buy the merch from the opener nobody's heard of yet." },
-  { t:"Build the ultimate charcuterie board", b:"Split up in the store, meet at checkout, assemble a ridiculous spread.", v:"foodie", budget:2, setting:"home", time:"evening", em:"🧀", up:"One weird item each that the other has to try first." },
-  { t:"Drive-in or projector movie outside", b:"Sheet on the wall, blanket on the grass, snacks smuggled from home.", v:"cozy", budget:1, setting:"outdoors", time:"late", em:"🎬", up:"Pick a movie one of you loves and has never shown the other." },
-  { t:"Try the scary ride / activity", b:"The rock wall, the roller coaster, the karaoke stage — the thing you'd normally skip.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🎢", up:"Hold hands the whole time. That's the rule." },
-  { t:"Puzzle + wine night", b:"1000 pieces, two glasses, one slow evening with nowhere to be.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧩", up:"Whoever places the last piece gets breakfast made for them." },
-  { t:"Volunteer together", b:"Sign up for a shift — food bank, animal shelter, beach cleanup — and do good as a team.", v:"cultured", budget:0, setting:"out", time:"day", em:"🤝", up:"Grab your favorite comfort food together after." },
-  { t:"Sunset kayak or paddle", b:"Rent a boat for an hour and be on the water as the light goes gold.", v:"outdoorsy", budget:2, setting:"outdoors", time:"evening", em:"🛶", up:"Pack a waterproof snack and drift with the engine (of your legs) off." },
-  { t:"Dessert-first date", b:"Go straight for the best dessert in town, then figure out dinner after. Rebel.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🍰", up:"Split two so you can try double the sugar." },
-  { t:"Write letters to future-you", b:"Each write a letter to open on your next anniversary. Seal, hide, wait.", v:"romantic", budget:0, setting:"home", time:"evening", em:"💌", up:"Add one photo from tonight inside each envelope." },
-  { t:"Karaoke, no matter how bad", b:"Private room or brave open mic. One duet is mandatory.", v:"playful", budget:2, setting:"out", time:"late", em:"🎤", up:"Each pick a song the other has to sing. No refusing." },
-  { t:"Farmers-market-to-plate brunch", b:"Coffee, pastries, wander, then a lazy brunch you didn't have to make.", v:"foodie", budget:2, setting:"out", time:"day", em:"🥐", up:"Try one stall you always walk past." },
-  { t:"Sound-bath / stretch / yoga together", b:"Follow a class or a video and actually slow all the way down for once.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🧘", up:"End with five quiet minutes and no talking." },
-  { t:"Explore a town you've never visited", b:"Pick a spot 30–60 min away, drive out, and just wander with no itinerary.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🗺️", up:"Ask a local for their one must-do and actually do it." },
-  { t:"Candlelit dinner you cook together", b:"Nice tablecloth, real candles, a recipe slightly above your skill level.", v:"romantic", budget:2, setting:"home", time:"evening", em:"🕯️", up:"Dress up like you're going out — even though you're not." },
-  { t:"Arcade or mini-golf showdown", b:"Tokens, tickets, terrible putting. Loser buys the ice cream.", v:"playful", budget:2, setting:"out", time:"evening", em:"🕹️", up:"Combine your tickets for the single dumbest prize possible." },
-  { t:"Rooftop / hilltop city-light watch", b:"Find the best free view of the skyline and just take it in with a drink.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🌃", up:"Name the buildings you can, make up names for the rest." },
-  { t:"Plan your dream trip (for real-ish)", b:"Pick a fantasy destination and build the whole itinerary, budget and all.", v:"cozy", budget:0, setting:"home", time:"evening", em:"✈️", up:"Book one tiny real thing toward it tonight, even if it's a savings jar." },
-  { t:"Bake something ambitious", b:"Croissants, a layer cake, homemade bread — pick the intimidating one.", v:"foodie", budget:1, setting:"home", time:"day", em:"🥖", up:"Deliver a piece to a neighbor or friend when it's done." },
-  { t:"Botanical garden or greenhouse", b:"Wander somewhere green and warm and pretend you're somewhere tropical.", v:"cultured", budget:1, setting:"out", time:"day", em:"🌿", up:"Each pick the plant you'd be and defend your choice." },
-  { t:"At-home wine (or tea) tasting", b:"Three bottles or blends, blind, scorecards and all. Get pretentious about it.", v:"cozy", budget:2, setting:"home", time:"evening", em:"🍷", up:"Invent absurd tasting notes: 'hints of gym sock and hope.'" },
-  { t:"Geocaching / scavenger hunt", b:"Follow the app to hidden caches around town, or make a hunt for each other.", v:"adventurous", budget:0, setting:"outdoors", time:"day", em:"🧭", up:"Leave something small behind for the next person to find." },
-  { t:"Order the whole 'we've never tried' menu", b:"Go somewhere and order only things you've both never had. No safe picks.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍽️", up:"Rank everything after and settle the winner by debate." },
-  { t:"Rainy-day café hop", b:"Two cafés, one shared dessert at each, and a long unhurried talk.", v:"cozy", budget:1, setting:"out", time:"day", em:"☕", up:"Bring a notebook and each write down the other's coffee order for keeps." },
-  { t:"Firepit + long conversation", b:"Backyard fire or a beach one where allowed. Marshmallows and no agenda.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🔥", up:"Take turns finishing 'I never told you that…'" },
-  { t:"Dawn or dusk beach walk", b:"Shoes off, edge of the water, no destination. Collect something small.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🏖️", up:"Write your initials where the next wave will take them." },
-  { t:"Reverse date: they plan yours, you plan theirs", b:"Each secretly plans a mini-date for the other, back to back, same night.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🔄", up:"$20 budget each and one hour to pull it off. Go." },
-  { t:"Comedy night", b:"Live stand-up or a special on the couch — anything to laugh until it hurts.", v:"playful", budget:2, setting:"out", time:"late", em:"😂", up:"Each try to make the other laugh first with a terrible joke on the way." },
-  { t:"Local history walk", b:"Take a self-guided (or free) walking tour of your own city like tourists.", v:"cultured", budget:0, setting:"out", time:"day", em:"🏛️", up:"Find the oldest building you can and imagine who lived there." },
+  { t:"Cook a country you've never eaten", b:"Pick a place on the map, find a recipe from it, and make dinner together — bonus points for the playlist.", v:"foodie", budget:1, setting:"home", time:"evening", em:"🌍" },
+  { t:"Sunset picnic, no phones", b:"Grab snacks, a blanket, and a good spot facing west. Phones in the bag until the sun's down.", v:"romantic", budget:1, setting:"outdoors", time:"evening", em:"🌅" },
+  { t:"Blind bookstore swap", b:"Split up, secretly pick a book you think the other will love, wrap it, and swap.", v:"cultured", budget:1, setting:"out", time:"day", em:"📚" },
+  { t:"Build a pillow fort and stream something bad", b:"The worse the movie, the better. Snacks required, effort optional.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🏰" },
+  { t:"Golden-hour photo walk", b:"Wander your neighborhood and take turns photographing each other in the best light of the day.", v:"romantic", budget:0, setting:"outdoors", time:"evening", em:"📷" },
+  { t:"Two-bar cocktail crawl", b:"One drink each at two spots you've never tried. Compare notes on the walk between.", v:"spontaneous", budget:2, setting:"out", time:"late", em:"🍸" },
+  { t:"Farmers market, then cook the haul", b:"Buy whatever looks best with no plan, then improvise a meal from it back home.", v:"foodie", budget:2, setting:"out", time:"day", em:"🧺" },
+  { t:"Stargazing drive", b:"Head somewhere darker than home, lie back, and find three constellations between you.", v:"outdoorsy", budget:1, setting:"outdoors", time:"late", em:"🌌" },
+  { t:"The 100-question jar", b:"Write deep and silly questions on slips of paper, take turns pulling. No topic off-limits.", v:"romantic", budget:0, setting:"home", time:"evening", em:"🫙" },
+  { t:"Learn a dance from a video", b:"Pick one clip, clear the floor, and don't stop until you get the chorus right.", v:"playful", budget:0, setting:"home", time:"evening", em:"💃" },
+  { t:"Museum, but make it a game", b:"Each secretly pick a 'favorite' before you leave; guess each other's at the exit.", v:"cultured", budget:1, setting:"out", time:"day", em:"🖼️" },
+  { t:"Breakfast for dinner in bed", b:"Pancakes, eggs, the works — at 8pm, in pajamas, tray and all.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🥞" },
+  { t:"Sunrise mission", b:"Set an alarm, grab coffee, and go watch the day start somewhere with a view.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🌄" },
+  { t:"Thrift-store fit challenge", b:"$15 each, 20 minutes, dress the other person head to toe. Wear it to dinner.", v:"playful", budget:1, setting:"out", time:"day", em:"👗" },
+  { t:"Backyard camping", b:"Tent, string lights, ghost stories, and s'mores over the stove if you must.", v:"cozy", budget:1, setting:"home", time:"late", em:"⛺" },
+  { t:"Ramen or taco pilgrimage", b:"Find the most-hyped spot for one food you both love and finally go.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍜" },
+  { t:"Paint each other (badly)", b:"Cheap canvases, 30-minute timer, portraits of each other. Talent not required.", v:"playful", budget:1, setting:"home", time:"evening", em:"🎨" },
+  { t:"Hike to a payoff", b:"Pick a trail that ends in a view, a waterfall, or a swimming hole and earn it.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🥾" },
+  { t:"Recreate your first date", b:"Same place, or as close as you can get. Order what you ordered then.", v:"romantic", budget:2, setting:"out", time:"evening", em:"💞" },
+  { t:"Board-game tournament for stakes", b:"Best of three. Loser owes the winner a favor of the winner's choosing.", v:"playful", budget:0, setting:"home", time:"evening", em:"🎲" },
+  { t:"Late-night diner + drive", b:"Fries at midnight, windows down, the good playlist, nowhere to be.", v:"spontaneous", budget:1, setting:"out", time:"late", em:"🚗" },
+  { t:"Couples' cooking class", b:"Book a real class — pasta, sushi, dumplings — and make a mess together.", v:"foodie", budget:3, setting:"out", time:"evening", em:"👩‍🍳" },
+  { t:"Home spa night", b:"Face masks, warm towels, playlist of rain sounds, phones in another room.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧖" },
+  { t:"Bike somewhere new", b:"Ride to a part of town you never go and find lunch you didn't plan.", v:"adventurous", budget:1, setting:"outdoors", time:"day", em:"🚲" },
+  { t:"Live music, any genre", b:"Cheapest ticket to whatever's on tonight — a bar band counts.", v:"cultured", budget:2, setting:"out", time:"late", em:"🎸" },
+  { t:"Build the ultimate charcuterie board", b:"Split up in the store, meet at checkout, assemble a ridiculous spread.", v:"foodie", budget:2, setting:"home", time:"evening", em:"🧀" },
+  { t:"Projector movie outside", b:"Sheet on the wall, blanket on the grass, snacks smuggled from home.", v:"cozy", budget:1, setting:"outdoors", time:"late", em:"🎬" },
+  { t:"Try the scary ride", b:"The rock wall, the roller coaster, the karaoke stage — the thing you'd normally skip.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🎢" },
+  { t:"Puzzle + wine night", b:"1000 pieces, two glasses, one slow evening with nowhere to be.", v:"cozy", budget:1, setting:"home", time:"evening", em:"🧩" },
+  { t:"Volunteer together", b:"Sign up for a shift — food bank, animal shelter, beach cleanup — and do good as a team.", v:"cultured", budget:0, setting:"out", time:"day", em:"🤝" },
+  { t:"Sunset kayak or paddle", b:"Rent a boat for an hour and be on the water as the light goes gold.", v:"outdoorsy", budget:2, setting:"outdoors", time:"evening", em:"🛶" },
+  { t:"Dessert-first date", b:"Go straight for the best dessert in town, then figure out dinner after. Rebel.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🍰" },
+  { t:"Write letters to future-you", b:"Each write a letter to open on your next anniversary. Seal, hide, wait.", v:"romantic", budget:0, setting:"home", time:"evening", em:"💌" },
+  { t:"Karaoke, no matter how bad", b:"Private room or brave open mic. One duet is mandatory.", v:"playful", budget:2, setting:"out", time:"late", em:"🎤" },
+  { t:"Lazy brunch crawl", b:"Coffee, pastries, wander, then a long brunch you didn't have to make.", v:"foodie", budget:2, setting:"out", time:"day", em:"🥐" },
+  { t:"Stretch and slow down together", b:"Follow a class or a video and actually slow all the way down for once.", v:"cozy", budget:0, setting:"home", time:"evening", em:"🧘" },
+  { t:"Explore a town you've never visited", b:"Pick a spot 30–60 min away, drive out, and just wander with no itinerary.", v:"adventurous", budget:2, setting:"out", time:"day", em:"🗺️" },
+  { t:"Candlelit dinner you cook together", b:"Nice tablecloth, real candles, a recipe slightly above your skill level.", v:"romantic", budget:2, setting:"home", time:"evening", em:"🕯️" },
+  { t:"Arcade or mini-golf showdown", b:"Tokens, tickets, terrible putting. Loser buys the ice cream.", v:"playful", budget:2, setting:"out", time:"evening", em:"🕹️" },
+  { t:"Rooftop city-light watch", b:"Find the best free view of the skyline and just take it in with a drink.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🌃" },
+  { t:"Plan your dream trip (for real-ish)", b:"Pick a fantasy destination and build the whole itinerary, budget and all.", v:"cozy", budget:0, setting:"home", time:"evening", em:"✈️" },
+  { t:"Bake something ambitious", b:"Croissants, a layer cake, homemade bread — pick the intimidating one.", v:"foodie", budget:1, setting:"home", time:"day", em:"🥖" },
+  { t:"Botanical garden or greenhouse", b:"Wander somewhere green and warm and pretend you're somewhere tropical.", v:"cultured", budget:1, setting:"out", time:"day", em:"🌿" },
+  { t:"At-home tasting flight", b:"Three bottles or blends, blind, scorecards and all. Get pretentious about it.", v:"cozy", budget:2, setting:"home", time:"evening", em:"🍷" },
+  { t:"Geocaching scavenger hunt", b:"Follow the app to hidden caches around town, or make a hunt for each other.", v:"adventurous", budget:0, setting:"outdoors", time:"day", em:"🧭" },
+  { t:"Order only things you've never tried", b:"Go somewhere and order nothing familiar. No safe picks allowed.", v:"foodie", budget:2, setting:"out", time:"evening", em:"🍽️" },
+  { t:"Rainy-day café hop", b:"Two cafés, one shared dessert at each, and a long unhurried talk.", v:"cozy", budget:1, setting:"out", time:"day", em:"☕" },
+  { t:"Firepit + long conversation", b:"Backyard fire or a beach one where allowed. Marshmallows and no agenda.", v:"romantic", budget:1, setting:"outdoors", time:"late", em:"🔥" },
+  { t:"Dawn or dusk beach walk", b:"Shoes off, edge of the water, no destination. Collect something small.", v:"outdoorsy", budget:0, setting:"outdoors", time:"day", em:"🏖️" },
+  { t:"Reverse date: plan each other's", b:"Each secretly plans a mini-date for the other, back to back, same night.", v:"spontaneous", budget:2, setting:"out", time:"evening", em:"🔄" },
+  { t:"Comedy night", b:"Live stand-up or a special on the couch — anything to laugh until it hurts.", v:"playful", budget:2, setting:"out", time:"late", em:"😂" },
+  { t:"Local history walk", b:"Take a self-guided tour of your own city like tourists.", v:"cultured", budget:0, setting:"out", time:"day", em:"🏛️" },
 ];
 
-/* Combinator for the "Surprise mix" — near-infinite oddball dates */
-const MIX_ACTS = ["a spontaneous road trip to","a picnic at","a slow walk through","a tiny adventure at","a cozy evening built around","a dinner themed on","a photo mission at","a treasure hunt through"];
-const MIX_PLACES = ["the nearest lookout","a part of town you've never explored","the oldest café you can find","a bookstore you keep meaning to visit","the top of a parking garage at dusk","a park after dark","a diner that's open too late","a market full of things you don't need"];
-const MIX_TWISTS = ["— but you each pick one song and can't skip.","with a strict $20 budget between you.","and no phones until you get home.","where you have to order for each other.","and you speak only in questions the whole time.","with a coin flip deciding every choice.","and you each bring one surprise.","and whoever laughs first loses."];
+/* Sample finds so the Finds tab shows what a real sweep looks like
+   before a backend is connected. Clearly flagged as examples. */
+const SAMPLE_FINDS = [
+  { id:"s1", title:"The observatory is free on weeknights and nearly empty", blurb:"Everyone goes on weekends. Show up on a Tuesday around 8 and you'll basically have the telescope to yourselves — the volunteers will talk your ear off about whatever's visible.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"outdoorsy", budget:0, setting:"outdoors", time_of_day:"late", sample:true },
+  { id:"s2", title:"Ride the ferry back and forth at sunset with takeout", blurb:"It's technically transit so it costs almost nothing. Grab something to eat first, sit on the top deck, and just do the round trip twice.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"romantic", budget:1, setting:"outdoors", time_of_day:"evening", sample:true },
+  { id:"s3", title:"Pottery studios do walk-in date nights midweek", blurb:"Most places quietly run two-hour wheel sessions that don't need a booking on slow nights. You'll both be terrible and it's a great time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"playful", budget:2, setting:"out", time_of_day:"evening", sample:true },
+  { id:"s4", title:"The old cemetery does lantern history tours in the fall", blurb:"Sounds morbid, is actually lovely — small groups, genuinely good storytelling, and you end up somewhere warm for cider after.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"cultured", budget:1, setting:"outdoors", time_of_day:"late", sample:true },
+  { id:"s5", title:"Hit the international grocery and cook whatever you can't identify", blurb:"Give yourselves $20 each, one aisle you've never shopped, and no Googling until you're home. Genuinely the most fun we've had all year.", source:"reddit", source_label:"r/sample", source_url:"", vibe:"foodie", budget:1, setting:"home", time_of_day:"evening", sample:true },
+  { id:"s6", title:"Climbing gyms have cheap intro passes and nobody cares if you're bad", blurb:"Two-for-one day passes plus shoe rental runs about $30 total. Bouldering is way less intimidating than the rope walls if it's your first time.", source:"blog", source_label:"sample-blog.com", source_url:"", vibe:"adventurous", budget:2, setting:"out", time_of_day:"evening", sample:true },
+];
 
-/* ---------- Filter option definitions ---------- */
-const BUDGETS = [ {k:0,label:"Free",em:"🎁"}, {k:1,label:"$",em:"🪙"}, {k:2,label:"$$",em:"💵"}, {k:3,label:"$$$",em:"💎"} ];
-const SETTINGS = [ {k:"home",label:"At home",em:"🏠"}, {k:"out",label:"Out & about",em:"🌆"}, {k:"outdoors",label:"Outdoors",em:"🌤️"} ];
-const TIMES = [ {k:"day",label:"Daytime",em:"☀️"}, {k:"evening",label:"Evening",em:"🌆"}, {k:"late",label:"Late night",em:"🌙"} ];
-
-/* ---------- State ---------- */
+/* ---------- Keys / helpers ---------- */
 const LS = {
-  filters: "dd_filters_v1",
-  history: "dd_history_v1",
-  saved:   "dd_saved_local_v1",
-  profile: "dd_profile_v1",
-  theme:   "dd_theme_v1",
-  cfg:     "dd_supabase_cfg_v1",
+  local: "hs_local_v1", theme: "hs_theme_v1", cfg: "hs_cfg_v1", tab: "hs_tab_v1",
 };
+const $ = (s, r=document) => r.querySelector(s);
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
+const budgetLabel = b => ["Free","$","$$","$$$"][b] ?? "$$";
+const settingLabel = s => ({home:"At home",out:"Out & about",outdoors:"Outdoors"})[s] || "Out & about";
+const timeLabel = t => ({day:"Daytime",evening:"Evening",late:"Late night",any:"Anytime"})[t] || "Evening";
+const HAND_SIZE = 7;
+
+let toastTimer;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2600); }
+
+function timeAgo(iso){
+  if (!iso) return "never";
+  const s = (Date.now() - new Date(iso).getTime())/1000;
+  if (s < 90) return "just now";
+  if (s < 3600) return `${Math.round(s/60)}m ago`;
+  if (s < 86400) return `${Math.round(s/3600)}h ago`;
+  return `${Math.round(s/86400)}d ago`;
+}
+
+/* ---------- App state ---------- */
 const state = {
-  filters: { vibes: new Set(), budgets: new Set(), settings: new Set(), times: new Set(), mix: false },
-  history: [],
-  current: null,
-  saved: [],           // [{id,title,blurb,meta,status}]
-  profile: null,       // {you, partner}  (local mode)
-  // backend
-  sb: null, user: null, coupleId: null, inviteCode: null, partnerNames: [],
+  mode: "local",            // 'local' | 'backend'
+  sb: null, user: null, coupleId: null, inviteCode: null,
+  me: null,                 // {id, name, color, slot:'a'|'b'}
+  partner: null,            // {id, name, color} or null
+  hand: [], handIx: 0,
+  consensus: [], progress: null,
+  finds: [], area: null, lastSweep: null,
+  plan: null, log: [],
+  myReactions: [],          // [{key,title,blurb,meta,reaction}]
+  findsFilter: "all",
+  tab: "tonight",
 };
 
-/* ---------- tiny helpers ---------- */
-const $ = (s, r=document) => r.querySelector(s);
-const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v==null? d : JSON.parse(v); } catch { return d; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-const rand = arr => arr[Math.floor(Math.random()*arr.length)];
-const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let toastTimer;
-function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2200); }
+/* ============================================================
+   LOCAL STORE — both perspectives on one device
+   ============================================================ */
+function blankLocal(){
+  return {
+    people: [
+      { slot:"a", name:"Harshil", color:"indigo" },
+      { slot:"b", name:"Isha",    color:"rose"   },
+    ],
+    active: "a",
+    reactions: { a:{}, b:{} },   // slot -> { ideaKey: 'yes'|'maybe'|'pass' }
+    ideas: {},                   // ideaKey -> {title, blurb, meta, source...}
+    plan: null, log: [], area: null, finds: null, lastSweep: null,
+  };
+}
+function L(){ const v = lsGet(LS.local, null); return v || blankLocal(); }
+function saveL(v){ lsSet(LS.local, v); }
+
+/* ============================================================
+   API — one interface, two implementations
+   ============================================================ */
+const localApi = {
+  mode: "local",
+  async init(){
+    const d = L();
+    const me = d.people.find(p => p.slot === d.active) || d.people[0];
+    const partner = d.people.find(p => p.slot !== d.active) || null;
+    state.me = { id: me.slot, name: me.name, color: me.color, slot: me.slot };
+    state.partner = partner ? { id: partner.slot, name: partner.name, color: partner.color } : null;
+    state.area = d.area; state.lastSweep = d.lastSweep;
+    state.plan = d.plan; state.log = d.log || [];
+    state.finds = d.finds || SAMPLE_FINDS;
+  },
+  async myReactions(){
+    const d = L(), mine = d.reactions[d.active] || {};
+    return Object.entries(mine).map(([key, reaction]) => ({ key, reaction, ...(d.ideas[key]||{}) }));
+  },
+  async react(card, reaction){
+    const d = L();
+    d.reactions[d.active] = d.reactions[d.active] || {};
+    d.reactions[d.active][card.key] = reaction;
+    d.ideas[card.key] = { title: card.title, blurb: card.blurb, meta: card.meta, source_label: card.source_label, source_url: card.source_url };
+    saveL(d);
+  },
+  async pendingForMe(){
+    const d = L();
+    const mine = d.reactions[d.active] || {};
+    const other = d.reactions[d.active === "a" ? "b" : "a"] || {};
+    return Object.keys(other).filter(k => !(k in mine)).map(k => ({ key:k, ...(d.ideas[k]||{}) }));
+  },
+  async consensus(){
+    const d = L();
+    const mine = d.reactions[d.active] || {};
+    const other = d.reactions[d.active === "a" ? "b" : "a"] || {};
+    const theirName = (d.people.find(p=>p.slot !== d.active) || {}).name || "your partner";
+    return Object.keys(mine).filter(k => k in other).map(k => ({
+      key:k, mine: mine[k], theirs: other[k], theirName, ...(d.ideas[k]||{})
+    }));
+  },
+  async progress(){
+    const d = L();
+    const mine = d.reactions[d.active] || {};
+    const other = d.reactions[d.active === "a" ? "b" : "a"] || {};
+    const both = Object.keys(mine).filter(k => k in other).length;
+    return {
+      myVotes: Object.keys(mine).length,
+      theirVotes: Object.keys(other).length,
+      bothVoted: both,
+      waitingOnMe: Object.keys(other).filter(k => !(k in mine)).length,
+      theirName: (d.people.find(p=>p.slot !== d.active) || {}).name || "your partner",
+    };
+  },
+  async partnerReactions(){   // local-only: powers the "how you compare" chart
+    const d = L();
+    const other = d.reactions[d.active === "a" ? "b" : "a"] || {};
+    return Object.entries(other).map(([key, reaction]) => ({ key, reaction, ...(d.ideas[key]||{}) }));
+  },
+  async getFinds(){ const d = L(); return d.finds || SAMPLE_FINDS; },
+  async setArea(area){ const d = L(); d.area = area; saveL(d); state.area = area; },
+  async sweep(){ throw new Error("Live scouting needs the Supabase backend — see Settings → Connect a backend."); },
+  async setPlan(plan){ const d = L(); d.plan = plan; saveL(d); state.plan = plan; },
+  async clearPlan(){ const d = L(); d.plan = null; saveL(d); state.plan = null; },
+  async completePlan(){
+    const d = L();
+    if (d.plan){ d.log = [{ ...d.plan, done_at: new Date().toISOString() }, ...(d.log||[])]; d.plan = null; saveL(d); }
+    state.plan = null; state.log = d.log || [];
+  },
+};
+
+const backendApi = {
+  mode: "backend",
+  async init(){
+    const { data: prof } = await state.sb.rpc("bootstrap_profile", { p_name: null, p_color: null });
+    const p = Array.isArray(prof) ? prof[0] : prof;
+    state.coupleId = p?.couple_id;
+    state.me = { id: state.user.id, name: p?.display_name || "you", color: p?.color || "indigo", slot: "a" };
+
+    const { data: people } = await state.sb.from("profiles").select("id,display_name,color").eq("couple_id", state.coupleId);
+    const other = (people||[]).find(x => x.id !== state.user.id);
+    state.partner = other ? { id: other.id, name: other.display_name || "your partner", color: other.color || "rose" } : null;
+
+    const { data: couple } = await state.sb.from("couples").select("invite_code,city,region,lat,lng,last_sweep_at").eq("id", state.coupleId).single();
+    state.inviteCode = couple?.invite_code || null;
+    state.area = couple?.city ? { city: couple.city, region: couple.region, lat: couple.lat, lng: couple.lng } : null;
+    state.lastSweep = couple?.last_sweep_at || null;
+
+    const { data: plans } = await state.sb.from("plans").select("*").eq("couple_id", state.coupleId).eq("status","planned").order("created_at",{ascending:false}).limit(1);
+    state.plan = plans?.[0] ? { key: plans[0].idea_key, id: plans[0].id, title: plans[0].title, blurb: plans[0].blurb, meta: plans[0].meta, scheduled_for: plans[0].scheduled_for } : null;
+
+    const { data: log } = await state.sb.from("saved_ideas").select("*").eq("couple_id", state.coupleId).order("created_at",{ascending:false});
+    state.log = (log||[]).map(r => ({ title:r.title, blurb:r.blurb, meta:r.meta, done_at:r.done_at }));
+  },
+  async myReactions(){
+    const { data } = await state.sb.from("reactions").select("idea_key,idea_title,idea_blurb,idea_meta,reaction").eq("user_id", state.user.id);
+    return (data||[]).map(r => ({ key:r.idea_key, title:r.idea_title, blurb:r.idea_blurb, meta:r.idea_meta, reaction:r.reaction }));
+  },
+  async react(card, reaction){
+    await state.sb.from("reactions").upsert({
+      couple_id: state.coupleId, user_id: state.user.id, idea_key: card.key,
+      idea_title: card.title, idea_blurb: card.blurb, idea_meta: card.meta, reaction,
+    }, { onConflict: "user_id,idea_key" });
+  },
+  async pendingForMe(){
+    const { data } = await state.sb.rpc("pending_for_me");
+    return (data||[]).map(r => ({ key:r.idea_key, title:r.idea_title, blurb:r.idea_blurb, meta:r.idea_meta }));
+  },
+  async consensus(){
+    const { data } = await state.sb.rpc("get_consensus");
+    return (data||[]).map(r => ({
+      key:r.idea_key, title:r.idea_title, blurb:r.idea_blurb, meta:r.idea_meta,
+      mine:r.my_reaction, theirs:r.their_reaction, theirName:r.their_name,
+    }));
+  },
+  async progress(){
+    const { data } = await state.sb.rpc("vote_progress");
+    const r = Array.isArray(data) ? data[0] : data;
+    return r ? { myVotes:r.my_votes, theirVotes:r.their_votes, bothVoted:r.both_voted, waitingOnMe:r.waiting_on_me, theirName:r.their_name } : null;
+  },
+  async partnerReactions(){ return null; },  // deliberately unavailable — that's the point
+  async getFinds(){
+    const { data } = await state.sb.from("discovered_ideas").select("*").eq("couple_id", state.coupleId).order("created_at",{ascending:false}).limit(120);
+    return data || [];
+  },
+  async setArea(area){
+    await state.sb.from("couples").update({ city: area.city, region: area.region ?? null, lat: area.lat ?? null, lng: area.lng ?? null }).eq("id", state.coupleId);
+    state.area = area;
+  },
+  async sweep(){
+    const cfg = getConfig();
+    const { data: sess } = await state.sb.auth.getSession();
+    const res = await fetch(`${cfg.supabaseUrl}/functions/v1/discover-dates`, {
+      method: "POST",
+      headers: { "Content-Type":"application/json", Authorization: `Bearer ${sess?.session?.access_token}` },
+      body: JSON.stringify(state.area ? { city: state.area.city, region: state.area.region, lat: state.area.lat, lng: state.area.lng } : {}),
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.error || `Sweep failed (${res.status}). Is the discover-dates function deployed?`);
+    state.lastSweep = new Date().toISOString();
+    return json;
+  },
+  async setPlan(plan){
+    await state.sb.from("plans").update({ status:"cancelled" }).eq("couple_id", state.coupleId).eq("status","planned");
+    const { data } = await state.sb.from("plans").insert({
+      couple_id: state.coupleId, idea_key: plan.key, title: plan.title, blurb: plan.blurb,
+      meta: plan.meta, scheduled_for: plan.scheduled_for || null, created_by: state.user.id,
+    }).select().single();
+    state.plan = data ? { ...plan, id: data.id } : plan;
+  },
+  async clearPlan(){
+    await state.sb.from("plans").update({ status:"cancelled" }).eq("couple_id", state.coupleId).eq("status","planned");
+    state.plan = null;
+  },
+  async completePlan(){
+    if (!state.plan) return;
+    await state.sb.from("saved_ideas").insert({
+      couple_id: state.coupleId, title: state.plan.title, blurb: state.plan.blurb,
+      meta: state.plan.meta, status: "done", created_by: state.user.id, done_at: new Date().toISOString(),
+    });
+    if (state.plan.id) await state.sb.from("plans").update({ status:"done" }).eq("id", state.plan.id);
+    state.log = [{ title: state.plan.title, blurb: state.plan.blurb, meta: state.plan.meta, done_at: new Date().toISOString() }, ...state.log];
+    state.plan = null;
+  },
+};
+
+let api = localApi;
 
 /* ---------- Backend config ---------- */
 function getConfig(){
-  if (window.DATE_NIGHT_CONFIG && window.DATE_NIGHT_CONFIG.supabaseUrl) return window.DATE_NIGHT_CONFIG;
+  if (window.DATE_NIGHT_CONFIG?.supabaseUrl) return window.DATE_NIGHT_CONFIG;
   return lsGet(LS.cfg, null);
 }
-const hasBackend = () => !!(getConfig() && window.supabase && window.supabase.createClient);
+const backendConfigured = () => !!(getConfig() && window.supabase?.createClient);
 
 /* ============================================================
-   Rendering: filters
+   Card construction + hand dealing
    ============================================================ */
-function chip(label, em, pressed){
-  const b = document.createElement("button");
-  b.className = "chip"; b.type = "button"; b.setAttribute("aria-pressed", pressed ? "true":"false");
-  b.innerHTML = `<span class="em" aria-hidden="true">${em}</span><span>${escapeHtml(label)}</span>`;
-  return b;
-}
-function buildFilters(){
-  const vc = $("#vibeChips"); vc.innerHTML = "";
-  for (const [k,v] of Object.entries(VIBES)){
-    const c = chip(v.label, v.em, state.filters.vibes.has(k));
-    c.addEventListener("click", ()=>toggle(state.filters.vibes, k, c));
-    vc.appendChild(c);
-  }
-  // Surprise mix chip
-  const mixC = chip("Surprise mix", "🎰", state.filters.mix);
-  mixC.addEventListener("click", ()=>{ state.filters.mix = !state.filters.mix; mixC.setAttribute("aria-pressed", state.filters.mix?"true":"false"); persistFilters(); });
-  vc.appendChild(mixC);
-
-  const bc = $("#budgetChips"); bc.innerHTML = "";
-  BUDGETS.forEach(o=>{ const c=chip(o.label,o.em,state.filters.budgets.has(o.k)); c.addEventListener("click",()=>toggle(state.filters.budgets,o.k,c)); bc.appendChild(c); });
-  const sc = $("#settingChips"); sc.innerHTML = "";
-  SETTINGS.forEach(o=>{ const c=chip(o.label,o.em,state.filters.settings.has(o.k)); c.addEventListener("click",()=>toggle(state.filters.settings,o.k,c)); sc.appendChild(c); });
-  const tc = $("#timeChips"); tc.innerHTML = "";
-  TIMES.forEach(o=>{ const c=chip(o.label,o.em,state.filters.times.has(o.k)); c.addEventListener("click",()=>toggle(state.filters.times,o.k,c)); tc.appendChild(c); });
-}
-function toggle(set, key, el){
-  if (set.has(key)) set.delete(key); else set.add(key);
-  el.setAttribute("aria-pressed", set.has(key) ? "true":"false");
-  persistFilters();
-}
-function persistFilters(){
-  lsSet(LS.filters, {
-    vibes:[...state.filters.vibes], budgets:[...state.filters.budgets],
-    settings:[...state.filters.settings], times:[...state.filters.times], mix: state.filters.mix
-  });
-}
-function loadFilters(){
-  const f = lsGet(LS.filters, null);
-  if (!f) return;
-  state.filters.vibes = new Set(f.vibes||[]);
-  state.filters.budgets = new Set(f.budgets||[]);
-  state.filters.settings = new Set(f.settings||[]);
-  state.filters.times = new Set(f.times||[]);
-  state.filters.mix = !!f.mix;
-}
-
-/* ============================================================
-   The draw
-   ============================================================ */
-function matches(card){
-  const f = state.filters;
-  if (f.vibes.size && !f.vibes.has(card.v)) return false;
-  if (f.budgets.size && !f.budgets.has(card.budget)) return false;
-  if (f.settings.size && !f.settings.has(card.setting)) return false;
-  if (f.times.size && !f.times.has(card.time)) return false;
-  return true;
-}
-function makeMix(){
+function deckCard(d){
   return {
-    t: `${rand(MIX_ACTS)} ${rand(MIX_PLACES)}`.replace(/^./, c=>c.toUpperCase()),
-    b: `A wildcard the deck dreamed up ${rand(MIX_TWISTS)}`,
-    v: "spontaneous", budget: 1, setting: "out", time: "evening", em: "🎰",
-    up: "If you hate it, draw again — that's allowed.",
-    _mix: true,
+    key: "deck:" + slug(d.t), title: d.t, blurb: d.b,
+    meta: { vibe:d.v, budget:d.budget, setting:d.setting, time:d.time, em:d.em },
   };
 }
-function draw(){
-  let card;
-  if (state.filters.mix && Math.random() < 0.5){
-    card = makeMix();
-  } else {
-    let pool = DECK.filter(matches);
-    let relaxed = false;
-    if (!pool.length){ pool = DECK.slice(); relaxed = true; }
-    // avoid recent repeats
-    const avoid = new Set(state.history.slice(-Math.min(state.history.length, pool.length-1)));
-    let choices = pool.filter(c => !avoid.has(c.t));
-    if (!choices.length) choices = pool;
-    card = rand(choices);
-    if (relaxed && (state.filters.vibes.size||state.filters.budgets.size||state.filters.settings.size||state.filters.times.size)){
-      toast("Nothing matched — here's a wildcard ✨");
-    }
-    state.history.push(card.t);
-    state.history = state.history.slice(-40);
-    lsSet(LS.history, state.history);
-  }
-  state.current = card;
-  renderCard(card, true);
+function findCard(f){
+  return {
+    key: "found:" + f.id, title: f.title, blurb: f.blurb,
+    meta: { vibe:f.vibe, budget:f.budget, setting:f.setting, time:f.time_of_day, em: VIBES[f.vibe]?.em || "✨" },
+    source_label: f.source_label, source_url: f.source_url, sample: !!f.sample,
+  };
 }
-function budgetLabel(b){ return ["Free","$","$$","$$$"][b] ?? "$"; }
-function settingLabel(s){ return ({home:"At home",out:"Out & about",outdoors:"Outdoors"})[s] || s; }
-function timeLabel(t){ return ({day:"Daytime",evening:"Evening",late:"Late night",any:"Anytime"})[t] || t; }
-function renderCard(card, animate){
-  const el = $("#card");
-  const vibe = VIBES[card.v] || {label:card.v, em:card.em||"✨"};
-  $("#cardVibe").innerHTML = `<span class="em" aria-hidden="true">${vibe.em}</span> <span>${escapeHtml(vibe.label)}</span>`;
-  $("#cardTitle").innerHTML = `${card.em?card.em+" ":""}${escapeHtml(card.t)}`;
-  $("#cardBlurb").textContent = card.b;
-  $("#cardStubs").innerHTML =
-    `<span class="stub">💸 <b>${budgetLabel(card.budget)}</b></span>` +
-    `<span class="stub">📍 <b>${settingLabel(card.setting)}</b></span>` +
-    `<span class="stub">🕑 <b>${timeLabel(card.time)}</b></span>`;
-  if (card.up){ $("#cardLevelup").hidden = false; $("#cardLevelupText").textContent = card.up; }
-  else { $("#cardLevelup").hidden = true; }
-  // save button state
-  const saveBtn = $("#saveBtn");
-  const already = state.saved.some(s => s.title === card.t);
-  saveBtn.classList.toggle("saved", already);
-  saveBtn.innerHTML = already ? "♥ Saved" : "♡ Save";
-  if (animate){
-    el.classList.remove("dealing"); void el.offsetWidth; el.classList.add("dealing");
+
+// Affinity per vibe, from my own votes. Drives which cards I see more of.
+function tasteFrom(reactions){
+  const acc = {};
+  for (const r of reactions||[]){
+    const v = r.meta?.vibe; if (!v) continue;
+    acc[v] = acc[v] || { yes:0, maybe:0, pass:0, n:0 };
+    acc[v][r.reaction] = (acc[v][r.reaction]||0) + 1;
+    acc[v].n++;
   }
+  const out = {};
+  for (const [v,c] of Object.entries(acc)) out[v] = { score: (c.yes + c.maybe*0.4) / Math.max(c.n,1), n: c.n };
+  return out;
+}
+
+async function dealHand(){
+  const mine = await api.myReactions();
+  state.myReactions = mine;
+  const seen = new Set(mine.map(r => r.key));
+  const taste = tasteFrom(mine);
+
+  const tier1 = (await api.pendingForMe())
+    .filter(p => !seen.has(p.key))
+    .map(p => ({ key:p.key, title:p.title, blurb:p.blurb, meta:p.meta || {}, converge:true }));
+
+  const finds = await api.getFinds();
+  state.finds = finds;
+  const tier2 = finds.map(findCard).filter(c => !seen.has(c.key));
+
+  const tier3 = DECK.map(deckCard).filter(c => !seen.has(c.key));
+
+  // Weight the unseen pools by taste, with enough randomness to stay surprising.
+  const weight = c => (taste[c.meta?.vibe]?.score ?? 0.5) * 0.65 + Math.random() * 0.75;
+  tier2.sort((a,b) => weight(b) - weight(a));
+  tier3.sort((a,b) => weight(b) - weight(a));
+
+  const hand = [];
+  const push = arr => { for (const c of arr){ if (hand.length >= HAND_SIZE) return; if (!hand.some(h=>h.key===c.key)) hand.push(c); } };
+  push(tier1.slice(0, 4));        // converge on what they've already judged
+  push(tier2.slice(0, 4));        // fresh local finds
+  push(tier3);                    // curated fallback
+  push(tier2); push(tier1);
+
+  state.hand = hand;
+  state.handIx = 0;
 }
 
 /* ============================================================
-   Saved deck (local + backend)
+   RENDER — Tonight
    ============================================================ */
-function cardToMeta(c){ return { vibe:c.v, budget:c.budget, setting:c.setting, time:c.time, em:c.em||"✨" }; }
+function renderTonight(){
+  const stage = $("#voteStage"), done = $("#handDone");
+  const card = state.hand[state.handIx];
 
-async function saveCurrent(){
-  const c = state.current; if (!c) return;
-  if (state.saved.some(s => s.title === c.t)){ toast("Already in your deck"); return; }
-  const rec = { id: "loc_"+Date.now(), title:c.t, blurb:c.b, meta:cardToMeta(c), status:"saved" };
-  if (hasBackend() && state.user && state.coupleId){
-    try {
-      const { data, error } = await state.sb.from("saved_ideas").insert({
-        couple_id: state.coupleId, title: c.t, blurb: c.b, meta: rec.meta, created_by: state.user.id
-      }).select().single();
-      if (error) throw error;
-      rec.id = data.id;
-    } catch(e){ toast("Saved on this device (sync failed)"); }
-  }
-  state.saved.unshift(rec);
-  if (!hasBackend() || !state.user) persistSavedLocal();
-  renderSaved();
-  renderCard(c, false);
-  toast("Added to your deck ♥");
-}
-async function markDone(idOrCurrent){
-  let rec;
-  if (idOrCurrent === "current"){
-    const c = state.current; if (!c) return;
-    rec = state.saved.find(s => s.title === c.t);
-    if (!rec){ await saveCurrent(); rec = state.saved.find(s => s.title === c.t); }
-  } else {
-    rec = state.saved.find(s => s.id === idOrCurrent);
-  }
-  if (!rec) return;
-  rec.status = rec.status === "done" ? "saved" : "done";
-  if (hasBackend() && state.user && !String(rec.id).startsWith("loc_")){
-    try { await state.sb.from("saved_ideas").update({ status: rec.status, done_at: rec.status==="done"? new Date().toISOString(): null }).eq("id", rec.id); } catch {}
-  } else persistSavedLocal();
-  renderSaved();
-  if (rec.status === "done") toast("Nice — one for the memory books ✓");
-}
-async function removeSaved(id){
-  state.saved = state.saved.filter(s => s.id !== id);
-  if (hasBackend() && state.user && !String(id).startsWith("loc_")){
-    try { await state.sb.from("saved_ideas").delete().eq("id", id); } catch {}
-  } else persistSavedLocal();
-  renderSaved();
-  if (state.current) renderCard(state.current, false);
-}
-function persistSavedLocal(){ lsSet(LS.saved, state.saved); }
-
-function renderSaved(){
-  const list = $("#savedList");
-  const active = state.saved.filter(s=>s.status!=="done").length;
-  $("#savedCount").textContent = `${state.saved.length} saved`;
-  if (!state.saved.length){
-    list.innerHTML = `<div class="empty">No cards yet — draw one above and tap <b>Save</b> to start your deck.</div>`;
+  if (!card){
+    stage.hidden = true; done.hidden = false;
+    const p = state.progress || {};
+    const matches = state.consensus.filter(c => c.mine==="yes" && c.theirs==="yes").length;
+    const waiting = p.waitingOnMe || 0;
+    const theirTurn = Math.max(0, (p.myVotes||0) - (p.bothVoted||0));
+    done.innerHTML = `
+      <div class="row" style="align-items:center; margin-top:18px">
+        <span class="em" aria-hidden="true">✅</span>
+        <div class="txt">
+          <div class="t">That's your hand</div>
+          <div class="m">${p.myVotes||0} ideas judged · ${matches} match${matches===1?"":"es"} so far</div>
+        </div>
+      </div>
+      ${theirTurn > 0 ? `<div class="notice info">${esc(p.theirName||"Your partner")} hasn't voted on ${theirTurn} of your picks yet — results unlock as they do.</div>` : ""}
+      ${waiting > 0 ? `<div class="notice warn">${waiting} idea${waiting===1?"":"s"} ${esc(p.theirName||"your partner")} already judged ${waiting===1?"is":"are"} waiting on you. Deal again to clear them.</div>` : ""}
+      <div style="display:grid; gap:9px; margin-top:14px">
+        <button class="btn primary block" id="dealMore">Deal another hand</button>
+        <button class="btn ghost block" id="toConsensus">See where you line up →</button>
+      </div>`;
+    $("#dealMore").addEventListener("click", async ()=>{ await dealHand(); renderTonight(); });
+    $("#toConsensus").addEventListener("click", ()=>setTab("consensus"));
+    renderTaste();
     return;
   }
-  list.innerHTML = "";
-  for (const s of state.saved){
-    const em = (s.meta && s.meta.em) || "♥";
-    const bits = s.meta ? [budgetLabel(s.meta.budget), settingLabel(s.meta.setting), timeLabel(s.meta.time)].join(" · ") : "";
-    const row = document.createElement("div");
-    row.className = "saved-item" + (s.status==="done"?" done":"");
-    row.innerHTML =
-      `<span class="em" aria-hidden="true">${em}</span>
-       <div class="txt"><div class="t">${escapeHtml(s.title)}</div><div class="m">${escapeHtml(bits)}</div></div>
-       <button class="mini done-btn" title="${s.status==='done'?'Move back to saved':'Mark as done'}" aria-label="Toggle done">✓</button>
-       <button class="mini rm" title="Remove" aria-label="Remove">✕</button>`;
-    row.querySelector(".done-btn").addEventListener("click", ()=>markDone(s.id));
-    row.querySelector(".rm").addEventListener("click", ()=>removeSaved(s.id));
-    list.appendChild(row);
+
+  stage.hidden = false; done.hidden = true;
+  const vibe = VIBES[card.meta?.vibe] || { label: card.meta?.vibe || "Idea", em: card.meta?.em || "✨" };
+
+  const src = [];
+  src.push(`<span class="vibe-tag"><span aria-hidden="true">${vibe.em}</span> ${esc(vibe.label)}</span>`);
+  if (card.converge) src.push(`<span class="src-badge" title="Your partner has already voted on this one">🔒 awaiting your call</span>`);
+  if (card.sample) src.push(`<span class="src-badge sample">⚠︎ sample find</span>`);
+  else if (card.source_url) src.push(`<a class="src-badge" href="${esc(card.source_url)}" target="_blank" rel="noopener noreferrer">↗ ${esc(card.source_label||"source")}</a>`);
+  else if (card.source_label) src.push(`<span class="src-badge">${esc(card.source_label)}</span>`);
+  $("#cardSrc").innerHTML = src.join("");
+
+  $("#cardTitle").textContent = card.title;
+  $("#cardBlurb").textContent = card.blurb || "";
+  $("#cardStubs").innerHTML =
+    `<span class="stub">💸 <b>${budgetLabel(card.meta?.budget)}</b></span>` +
+    `<span class="stub">📍 <b>${settingLabel(card.meta?.setting)}</b></span>` +
+    `<span class="stub">🕑 <b>${timeLabel(card.meta?.time)}</b></span>`;
+
+  $("#progress").innerHTML = state.hand.map((_,i) =>
+    `<span class="pdot ${i < state.handIx ? "done" : i === state.handIx ? "now" : ""}"></span>`).join("");
+
+  const el = $("#vcard");
+  el.classList.remove("dealing"); void el.offsetWidth; el.classList.add("dealing");
+
+  $("#tonightEyebrow").textContent = `Your hand · ${state.me?.name || "you"} only`;
+  renderTaste();
+}
+
+async function vote(reaction){
+  const card = state.hand[state.handIx];
+  if (!card) return;
+  await api.react(card, reaction);
+  state.handIx++;
+  await refreshDerived();
+  if (reaction === "yes"){
+    const hit = state.consensus.find(c => c.key === card.key && c.theirs === "yes");
+    if (hit) toast(`It's a match — ${hit.theirName} said yes too ♥`);
   }
+  renderTonight();
+  renderConsensus();
+}
+
+function renderTaste(){
+  const taste = tasteFrom(state.myReactions);
+  const entries = Object.entries(taste).filter(([,v]) => v.n > 0).sort((a,b) => b[1].score - a[1].score);
+  $("#tasteCount").textContent = `${state.myReactions.length} vote${state.myReactions.length===1?"":"s"}`;
+  const box = $("#tasteBars");
+  if (!entries.length){
+    box.innerHTML = `<div class="empty">Vote on a few ideas and your taste profile builds itself here.</div>`;
+    return;
+  }
+  box.innerHTML = entries.map(([v,c]) => {
+    const vi = VIBES[v] || { label:v, em:"✨" };
+    return `<div class="tbar">
+      <span class="lb"><span aria-hidden="true">${vi.em}</span>${esc(vi.label)}</span>
+      <span class="track"><span class="fill" style="width:${Math.round(c.score*100)}%"></span></span>
+      <span class="pc">${Math.round(c.score*100)}%</span>
+    </div>`;
+  }).join("");
 }
 
 /* ============================================================
-   Identity / header
+   RENDER — Consensus
    ============================================================ */
-function updateWho(){
-  const who = $("#whoLine");
-  const hint = $("#savedHint");
-  if (state.user && state.partnerNames.length){
-    who.textContent = state.partnerNames.join(" & ");
-    hint.textContent = "Synced ♥ — saved cards appear for both of you.";
-  } else if (state.user){
-    who.textContent = (state.partnerNames[0] || "signed in") + " · invite your partner";
-    hint.textContent = "You're signed in. Share your invite code (☰) so your partner's deck syncs with yours.";
-  } else if (state.profile){
-    who.textContent = [state.profile.you, state.profile.partner].filter(Boolean).join(" & ") || "just the two of you";
-    hint.textContent = "Saved on this device. Set up accounts (☰) to sync between your phones.";
+function renderConsensus(){
+  const p = state.progress || {};
+  const matches = state.consensus.filter(c => c.mine==="yes" && c.theirs==="yes");
+  const talk = state.consensus.filter(c =>
+    (c.mine==="yes" && c.theirs==="maybe") || (c.mine==="maybe" && c.theirs==="yes") || (c.mine==="maybe" && c.theirs==="maybe"));
+
+  // Plan banner
+  const slot = $("#planSlot");
+  if (state.plan){
+    const when = state.plan.scheduled_for;
+    const days = when ? Math.ceil((new Date(when+"T00:00:00") - new Date(new Date().toDateString()))/86400000) : null;
+    slot.innerHTML = `
+      <div class="plan">
+        <div class="k">Locked in · your next date</div>
+        <h2>${esc(state.plan.title)}</h2>
+        <div class="when">${when ? esc(new Date(when+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})) + (days!==null && days>=0 ? ` · ${days===0?"today":days===1?"tomorrow":"in "+days+" days"}` : "") : "no date set yet"}</div>
+        <div class="acts">
+          <button class="btn sm primary" id="planDone">We did it ✓</button>
+          <button class="btn sm ghost" id="planWhen">${when ? "Change date" : "Pick a date"}</button>
+          <button class="btn sm ghost" id="planClear">Unpick</button>
+        </div>
+      </div>`;
+    $("#planDone").addEventListener("click", async ()=>{ await api.completePlan(); renderConsensus(); toast("Logged. That's one for the books ♥"); });
+    $("#planWhen").addEventListener("click", ()=>planDateSheet());
+    $("#planClear").addEventListener("click", async ()=>{ await api.clearPlan(); renderConsensus(); toast("Unpicked"); });
   } else {
-    who.textContent = "just the two of you";
-    hint.textContent = "Ideas you save show up here. Set up accounts (☰) to sync them between you both.";
+    slot.innerHTML = `<div class="empty">No date locked in yet. Pick one from your matches below and it'll show up here.</div>`;
   }
+
+  // Stat tiles
+  $("#statTiles").innerHTML = `
+    <div class="stat"><div class="n">${p.myVotes ?? 0}</div><div class="l">your votes</div></div>
+    <div class="stat"><div class="n">${p.bothVoted ?? 0}</div><div class="l">both voted</div></div>
+    <div class="stat"><div class="n">${matches.length}</div><div class="l">matches</div></div>`;
+
+  // Matches
+  $("#matchCount").textContent = matches.length;
+  $("#matchList").innerHTML = matches.length
+    ? matches.map(c => matchCardHtml(c, "match")).join("")
+    : `<div class="empty">${(p.bothVoted ?? 0) === 0
+        ? `Nothing to reveal yet — you both need to vote on the same idea first.`
+        : `No double-yes yet. Keep dealing; you've both judged ${p.bothVoted} idea${p.bothVoted===1?"":"s"}.`}</div>`;
+
+  // Worth a talk
+  $("#talkCount").textContent = talk.length;
+  $("#talkList").innerHTML = talk.length
+    ? talk.map(c => matchCardHtml(c, "talk")).join("")
+    : `<div class="empty">Ideas where one of you said yes and the other said maybe will collect here.</div>`;
+
+  // wire "make this our date"
+  document.querySelectorAll("[data-pick]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const c = state.consensus.find(x => x.key === btn.dataset.pick);
+      if (!c) return;
+      await api.setPlan({ key:c.key, title:c.title, blurb:c.blurb, meta:c.meta, scheduled_for:null });
+      renderConsensus();
+      toast("Locked in ♥ — now pick a day");
+      planDateSheet();
+    });
+  });
+
+  renderCompare();
+  renderLog();
+}
+
+function matchCardHtml(c, kind){
+  const vibe = VIBES[c.meta?.vibe] || { label:"Idea", em:"✨" };
+  const meName = state.me?.name || "You";
+  const themName = c.theirName || state.partner?.name || "Partner";
+  const face = r => ({yes:"♥ yes", maybe:"~ maybe", pass:"✕ pass"})[r] || r;
+  return `<div class="match ${kind==="talk"?"talk":""} match-card">
+    <h4>${esc(c.title)}</h4>
+    ${c.blurb ? `<p>${esc(c.blurb.length>160 ? c.blurb.slice(0,157)+"…" : c.blurb)}</p>` : ""}
+    <div class="verdict">
+      <span class="vpill a">${esc(meName)}: ${face(c.mine)}</span>
+      <span class="vpill b">${esc(themName)}: ${face(c.theirs)}</span>
+      <span class="vpill">${vibe.em} ${esc(vibe.label)}</span>
+      <span class="vpill">${budgetLabel(c.meta?.budget)}</span>
+    </div>
+    <button class="btn sm primary" data-pick="${esc(c.key)}">Make this our next date</button>
+  </div>`;
+}
+
+function renderCompare(){
+  const box = $("#compareBars");
+  const mineT = tasteFrom(state.myReactions);
+
+  // In backend mode we can't read their raw votes (by design), so we derive
+  // their leanings from the ideas you've BOTH voted on — which we're allowed to see.
+  const theirsFrom = state.consensus.map(c => ({ meta:c.meta, reaction:c.theirs }));
+  const theirT = tasteFrom(theirsFrom);
+
+  const vibes = [...new Set([...Object.keys(mineT), ...Object.keys(theirT)])]
+    .filter(v => (mineT[v]?.n || 0) + (theirT[v]?.n || 0) > 0);
+
+  if (!vibes.length || !state.consensus.length){
+    box.innerHTML = `<div class="empty">Once you've both voted on a few of the same ideas, you'll see where your tastes agree — and where they really don't.</div>`;
+    return;
+  }
+
+  const meName = state.me?.name || "You";
+  const themName = state.partner?.name || state.consensus[0]?.theirName || "Partner";
+
+  const rows = vibes.map(v => {
+    const vi = VIBES[v] || { label:v, em:"✨" };
+    const a = Math.round((mineT[v]?.score ?? 0) * 100);
+    const b = Math.round((theirT[v]?.score ?? 0) * 100);
+    return { v, vi, a, b, gap: Math.abs(a-b) };
+  }).sort((x,y) => (y.a+y.b) - (x.a+x.b));
+
+  const agree = rows.filter(r=>r.gap<=20).sort((x,y)=>(y.a+y.b)-(x.a+x.b))[0];
+  const clash = rows.slice().sort((x,y)=>y.gap-x.gap)[0];
+
+  box.innerHTML = `
+    <div class="verdict" style="margin-bottom:6px">
+      <span class="vpill a">${esc(meName)}</span><span class="vpill b">${esc(themName)}</span>
+    </div>
+    ${rows.map(r => `
+      <div class="tbar dual">
+        <span class="lb"><span aria-hidden="true">${r.vi.em}</span>${esc(r.vi.label)}</span>
+        <span class="stack">
+          <span class="track"><span class="fill a" style="width:${r.a}%"></span></span>
+          <span class="track"><span class="fill b" style="width:${r.b}%"></span></span>
+        </span>
+        <span class="pc">${r.a}/${r.b}</span>
+      </div>`).join("")}
+    ${agree || clash ? `<div class="notice info" style="margin-top:12px">
+      ${agree ? `You're most in sync on <b>${esc(agree.vi.label.toLowerCase())}</b> dates.` : ""}
+      ${clash && clash.gap > 25 ? ` Biggest split: <b>${esc(clash.vi.label.toLowerCase())}</b>.` : ""}
+    </div>` : ""}`;
+}
+
+function renderLog(){
+  $("#logCount").textContent = state.log.length;
+  $("#logList").innerHTML = state.log.length
+    ? state.log.map(l => `<div class="row">
+        <span class="em" aria-hidden="true">${l.meta?.em || "♥"}</span>
+        <div class="txt"><div class="t">${esc(l.title)}</div>
+        <div class="m">${l.done_at ? esc(new Date(l.done_at).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})) : ""}</div></div>
+      </div>`).join("")
+    : `<div class="empty">Dates you actually go on land here. Mark one done from the plan above.</div>`;
 }
 
 /* ============================================================
-   Theme
+   RENDER — Finds
    ============================================================ */
+function renderFinds(){
+  $("#areaName").textContent = state.area?.city
+    ? [state.area.city, state.area.region].filter(Boolean).join(", ")
+    : "No area set";
+  $("#sweepMeta").textContent = state.area?.city
+    ? `Last swept ${timeAgo(state.lastSweep)}`
+    : "Set your area to start scouting";
+
+  const all = state.finds || [];
+  const filtered = state.findsFilter === "all" ? all : all.filter(f => f.source === state.findsFilter);
+  $("#findsCount").textContent = filtered.length;
+  $("#findsFilterBtn").textContent = { all:"All", reddit:"Reddit", blog:"Blogs" }[state.findsFilter];
+
+  const seen = new Set(state.myReactions.map(r => r.key));
+
+  $("#findsList").innerHTML = filtered.length
+    ? filtered.map(f => {
+        const key = "found:" + f.id;
+        const vi = VIBES[f.vibe] || { label:f.vibe || "Idea", em:"✨" };
+        const voted = seen.has(key);
+        return `<div class="row">
+          <span class="em" aria-hidden="true">${vi.em}</span>
+          <div class="txt">
+            <div class="t">${esc(f.title)}</div>
+            <div class="m">
+              ${f.sample ? `<span style="color:var(--warn)">⚠︎ sample</span>` : (f.source_url
+                ? `<a href="${esc(f.source_url)}" target="_blank" rel="noopener noreferrer" style="color:inherit">↗ ${esc(f.source_label)}</a>`
+                : esc(f.source_label || ""))}
+              · ${budgetLabel(f.budget)} · ${esc(timeLabel(f.time_of_day))}
+            </div>
+          </div>
+          ${voted ? `<span class="mini" style="cursor:default">voted</span>` : `<button class="mini" data-queue="${esc(f.id)}">Add</button>`}
+        </div>`;
+      }).join("")
+    : `<div class="empty">${state.mode === "local"
+        ? `These are sample finds. Connect the Supabase backend and deploy <code>discover-dates</code> to scout your actual city.`
+        : `No finds yet — hit <b>Sweep for new ideas</b> above.`}</div>`;
+
+  document.querySelectorAll("[data-queue]").forEach(b => {
+    b.addEventListener("click", () => {
+      const f = (state.finds||[]).find(x => String(x.id) === b.dataset.queue);
+      if (!f) return;
+      const c = findCard(f);
+      if (state.hand.some(h => h.key === c.key)){ toast("Already in your hand"); return; }
+      state.hand.splice(state.handIx, 0, c);
+      toast("Added to the front of your hand");
+      setTab("tonight");
+      renderTonight();
+    });
+  });
+}
+
+/* ============================================================
+   Sheets
+   ============================================================ */
+function openSheet(html){
+  $("#sheetRoot").innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#scrim").addEventListener("click", e => { if (e.target.id === "scrim") closeSheet(); });
+  document.addEventListener("keydown", escClose);
+}
+function closeSheet(){ $("#sheetRoot").innerHTML = ""; document.removeEventListener("keydown", escClose); }
+function escClose(e){ if (e.key === "Escape") closeSheet(); }
+window.closeSheet = closeSheet;
+
+function planDateSheet(){
+  if (!state.plan) return;
+  const today = new Date().toISOString().slice(0,10);
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>When are we doing this?</h2><p>${esc(state.plan.title)}</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    <div class="field"><label for="planDate">Date</label>
+      <input type="date" id="planDate" min="${today}" value="${esc(state.plan.scheduled_for || "")}"></div>
+    <div class="field"><button class="btn primary block" id="savePlanDate">Lock it in</button></div>
+  `);
+  $("#savePlanDate").addEventListener("click", async ()=>{
+    const v = $("#planDate").value;
+    await api.setPlan({ ...state.plan, scheduled_for: v || null });
+    state.plan = { ...state.plan, scheduled_for: v || null };
+    closeSheet(); renderConsensus(); toast("It's a date ♥");
+  });
+}
+
+function areaSheet(){
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>Where are you two?</h2><p>The scout uses your city to search local subreddits and blogs.</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    <div class="field"><button class="btn block" id="useLoc">📍 Use my current location</button>
+      <div class="hintline">Asks your browser for permission, then looks up the city name. Never leaves your device in local mode.</div></div>
+    <div class="divider">or type it</div>
+    <div class="row2">
+      <div class="field" style="margin-top:0"><label for="cityIn">City</label><input id="cityIn" value="${esc(state.area?.city||"")}" placeholder="Austin" autocomplete="address-level2"></div>
+      <div class="field" style="margin-top:0"><label for="regionIn">State / region</label><input id="regionIn" value="${esc(state.area?.region||"")}" placeholder="TX" autocomplete="address-level1"></div>
+    </div>
+    <div class="field"><button class="btn primary block" id="saveArea">Save area</button></div>
+    <div id="areaMsg"></div>
+  `);
+  $("#useLoc").addEventListener("click", async ()=>{
+    const msg = $("#areaMsg");
+    if (!navigator.geolocation){ msg.innerHTML = `<div class="notice err">This browser doesn't support location.</div>`; return; }
+    msg.innerHTML = `<div class="notice info">Asking for your location…</div>`;
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const { latitude:lat, longitude:lng } = pos.coords;
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+        const j = await r.json();
+        $("#cityIn").value = j.city || j.locality || "";
+        $("#regionIn").value = j.principalSubdivisionCode?.split("-").pop() || j.principalSubdivision || "";
+        msg.innerHTML = `<div class="notice ok">Found you — check it looks right, then save.</div>`;
+        state.area = { ...(state.area||{}), lat, lng };
+      } catch {
+        state.area = { ...(state.area||{}), lat, lng };
+        msg.innerHTML = `<div class="notice warn">Got your coordinates, but the city lookup was blocked here. Type the city in manually.</div>`;
+      }
+    }, err => {
+      msg.innerHTML = `<div class="notice err">${err.code===1?"Location permission was denied — type your city instead.":"Couldn't get your location. Type your city instead."}</div>`;
+    }, { timeout: 10000 });
+  });
+  $("#saveArea").addEventListener("click", async ()=>{
+    const city = $("#cityIn").value.trim(), region = $("#regionIn").value.trim();
+    if (!city){ toast("City is required"); return; }
+    await api.setArea({ city, region, lat: state.area?.lat ?? null, lng: state.area?.lng ?? null });
+    closeSheet(); renderFinds(); toast("Area saved 📍");
+  });
+}
+
+function menuSheet(){
+  if (state.mode === "backend" && state.user) return accountSheet();
+  return localSettingsSheet();
+}
+
+function localSettingsSheet(){
+  const d = L();
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>The two of you</h2><p>Both perspectives live on this device. Hand the phone over to switch.</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    <div class="row2">
+      <div class="field" style="margin-top:0"><label for="nameA">First person</label><input id="nameA" value="${esc(d.people[0].name)}"></div>
+      <div class="field" style="margin-top:0"><label for="nameB">Second person</label><input id="nameB" value="${esc(d.people[1].name)}"></div>
+    </div>
+    <div class="field"><button class="btn primary block" id="saveNames">Save names</button></div>
+
+    <div class="divider">sync across two phones</div>
+    <p class="sub" style="font-size:14px">Right now everything lives in this browser. Connect a Supabase backend to get real logins, true blind voting, and the live idea scout.</p>
+    <div class="field"><button class="btn block" id="toBackend">Connect a backend →</button></div>
+
+    <div class="settings-row" style="margin-top:14px">
+      <div><div class="lbl">Reset everything</div><div class="sub2">Clears both people's votes on this device</div></div>
+      <button class="btn ghost sm" id="resetAll">Reset</button>
+    </div>
+  `);
+  $("#saveNames").addEventListener("click", ()=>{
+    const d2 = L();
+    d2.people[0].name = $("#nameA").value.trim() || "Person 1";
+    d2.people[1].name = $("#nameB").value.trim() || "Person 2";
+    saveL(d2); closeSheet(); boot(); toast("Saved ♥");
+  });
+  $("#toBackend").addEventListener("click", backendConfigSheet);
+  $("#resetAll").addEventListener("click", ()=>{
+    if (!confirm("Clear all votes, matches and plans on this device? This can't be undone.")) return;
+    saveL(blankLocal()); closeSheet(); boot(); toast("Reset");
+  });
+}
+
+function backendConfigSheet(){
+  const cfg = lsGet(LS.cfg, {}) || {};
+  const fixed = !!window.DATE_NIGHT_CONFIG?.supabaseUrl;
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>Connect a backend</h2><p>Paste the two values from Supabase → Settings → API. Stored only on this device.</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    ${fixed ? `<div class="notice info">This copy already ships with a backend in <code>config.js</code>.</div>` : ""}
+    <div class="field"><label for="sbUrl">Project URL</label><input id="sbUrl" value="${esc(cfg.supabaseUrl||"")}" placeholder="https://xxxx.supabase.co"></div>
+    <div class="field"><label for="sbKey">Anon public key</label><input id="sbKey" value="${esc(cfg.supabaseAnonKey||"")}" placeholder="eyJhbGciOi…">
+      <div class="hintline">Safe in the browser — row-level security is what actually protects your data.</div></div>
+    <div class="field"><button class="btn primary block" id="saveCfg">Save &amp; connect</button></div>
+    <div class="notice info">Run <code>supabase-schema.sql</code> in the SQL editor once before signing in.</div>
+  `);
+  $("#saveCfg").addEventListener("click", async ()=>{
+    const url = $("#sbUrl").value.trim(), key = $("#sbKey").value.trim();
+    if (!url || !key){ toast("Both fields are required"); return; }
+    lsSet(LS.cfg, { supabaseUrl:url, supabaseAnonKey:key });
+    initSb();
+    if (state.sb){ closeSheet(); authSheet(); } else toast("Couldn't initialise — check the values");
+  });
+}
+
+function authSheet(mode="signin"){
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>${mode==="signup"?"Create your account":"Welcome back"}</h2><p>You each sign in with your own email, then link with a code.</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    <div class="tabs2" role="tablist">
+      <button role="tab" id="tabIn" aria-selected="${mode==='signin'}">Sign in</button>
+      <button role="tab" id="tabUp" aria-selected="${mode==='signup'}">Sign up</button>
+    </div>
+    <div id="nameField" class="field" ${mode==='signup'?'':'hidden'}>
+      <label for="dispName">Your name</label><input id="dispName" placeholder="Harshil" autocomplete="name">
+    </div>
+    <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@email.com"></div>
+    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="at least 6 characters"></div>
+    <div class="field"><button class="btn primary block" id="authGo">${mode==="signup"?"Create account":"Sign in"}</button></div>
+    <div id="authMsg"></div>
+    <div class="divider">or</div>
+    <button class="btn ghost block" id="editCfg">Change backend keys</button>
+    <button class="btn ghost block" style="margin-top:8px" id="stayLocal">Keep using local mode</button>
+  `);
+  $("#tabIn").addEventListener("click", ()=>authSheet("signin"));
+  $("#tabUp").addEventListener("click", ()=>authSheet("signup"));
+  $("#editCfg").addEventListener("click", backendConfigSheet);
+  $("#stayLocal").addEventListener("click", ()=>{ closeSheet(); });
+  $("#authGo").addEventListener("click", ()=>doAuth(mode));
+  $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") doAuth(mode); });
+}
+
+async function doAuth(mode){
+  const email = $("#email").value.trim(), pw = $("#pw").value;
+  const name = mode==="signup" ? ($("#dispName")?.value.trim() || "") : "";
+  const msg = $("#authMsg"), btn = $("#authGo");
+  if (!email || !pw){ msg.innerHTML = `<div class="notice err">Email and password are required.</div>`; return; }
+  btn.disabled = true; btn.textContent = "…";
+  try {
+    const res = mode==="signup"
+      ? await state.sb.auth.signUp({ email, password: pw })
+      : await state.sb.auth.signInWithPassword({ email, password: pw });
+    if (res.error) throw res.error;
+    if (mode==="signup" && !res.data.session){
+      msg.innerHTML = `<div class="notice ok">Account created — confirm via the email Supabase sent, then sign in.</div>`;
+      btn.disabled = false; btn.textContent = "Create account"; return;
+    }
+    state.user = res.data.user;
+    if (name) await state.sb.rpc("bootstrap_profile", { p_name: name, p_color: null });
+    closeSheet(); await boot(); toast("Signed in ♥");
+  } catch(e){
+    const net = /fetch|network|failed to fetch/i.test(e.message || "");
+    msg.innerHTML = `<div class="notice err">${esc(net
+      ? "Couldn't reach the backend from here. The sandboxed preview blocks external databases — this works on your own hosted copy. Local mode still works fine."
+      : (e.message || "Something went wrong."))}</div>`;
+    btn.disabled = false; btn.textContent = mode==="signup" ? "Create account" : "Sign in";
+  }
+}
+
+function accountSheet(){
+  const linked = !!state.partner;
+  openSheet(`
+    <div class="sheet-head">
+      <div><h2>${esc(state.me?.name || "Your account")}</h2><p>${linked ? `Linked with ${esc(state.partner.name)} ♥` : "Not linked with your partner yet"}</p></div>
+      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
+    </div>
+    ${linked ? `<div class="notice ok">Your votes stay private. Only ideas you've <em>both</em> judged show up in Consensus.</div>` : `
+      <div class="field"><label>Your invite code — send it to your partner</label>
+        <div class="code-badge">${esc(state.inviteCode || "…")}</div></div>
+      <div class="divider">or enter theirs</div>
+      <div class="field"><label for="joinCode">Partner's code</label><input id="joinCode" placeholder="ABC123" style="text-transform:uppercase"></div>
+      <div class="field"><button class="btn primary block" id="joinBtn">Link our accounts</button></div>
+      <div id="joinMsg"></div>`}
+    <div class="settings-row" style="margin-top:16px">
+      <div><div class="lbl">Your area</div><div class="sub2">${esc(state.area?.city || "not set")}</div></div>
+      <button class="btn ghost sm" id="areaFromMenu">Change</button>
+    </div>
+    <div class="settings-row">
+      <div><div class="lbl">Sign out</div><div class="sub2">back to local mode on this device</div></div>
+      <button class="btn ghost sm" id="signOut">Sign out</button>
+    </div>
+  `);
+  if (!linked){
+    $("#joinBtn").addEventListener("click", async ()=>{
+      const code = $("#joinCode").value.trim().toUpperCase();
+      if (!code) return;
+      const btn = $("#joinBtn"); btn.disabled = true; btn.textContent = "Linking…";
+      try {
+        const { error } = await state.sb.rpc("join_couple", { p_code: code });
+        if (error) throw error;
+        closeSheet(); await boot(); toast("Linked ♥");
+      } catch(e){
+        $("#joinMsg").innerHTML = `<div class="notice err">${esc(e.message || "Couldn't link — check the code.")}</div>`;
+        btn.disabled = false; btn.textContent = "Link our accounts";
+      }
+    });
+  }
+  $("#areaFromMenu").addEventListener("click", areaSheet);
+  $("#signOut").addEventListener("click", async ()=>{
+    try { await state.sb.auth.signOut(); } catch {}
+    state.user = null; state.sb = null; closeSheet(); await boot(); toast("Signed out");
+  });
+}
+
+/* ---------- Pass-the-phone curtain (local mode) ---------- */
+function handOff(toSlot){
+  const d = L();
+  const person = d.people.find(p => p.slot === toSlot);
+  $("#curtainRoot").innerHTML = `
+    <div class="curtain">
+      <div class="inner">
+        <div class="big" aria-hidden="true">📱</div>
+        <h2>Pass the phone to ${esc(person.name)}</h2>
+        <p>${esc(d.people.find(p=>p.slot!==toSlot).name)}'s votes are hidden from here on. No peeking.</p>
+        <button class="btn primary block" id="curtainGo">I'm ${esc(person.name)} — my turn</button>
+      </div>
+    </div>`;
+  $("#curtainGo").addEventListener("click", async ()=>{
+    const dd = L(); dd.active = toSlot; saveL(dd);
+    $("#curtainRoot").innerHTML = "";
+    await boot();
+  });
+}
+
+/* ============================================================
+   Tabs / theme / header
+   ============================================================ */
+function setTab(t){
+  state.tab = t; lsSet(LS.tab, t);
+  for (const k of ["tonight","consensus","finds"]){
+    $(`#panel-${k}`).hidden = (k !== t);
+    $(`#tab-${k}`).setAttribute("aria-selected", String(k === t));
+  }
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  if (t === "finds") renderFinds();
+  if (t === "consensus") renderConsensus();
+}
 function applyTheme(t){
   if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
   else document.documentElement.removeAttribute("data-theme");
   lsSet(LS.theme, t);
 }
 function currentTheme(){
-  const explicit = document.documentElement.getAttribute("data-theme");
-  if (explicit) return explicit;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-$("#themeBtn").addEventListener("click", ()=>{
-  applyTheme(currentTheme()==="dark" ? "light" : "dark");
-});
-
-/* ============================================================
-   Sheets (account / settings / connect)
-   ============================================================ */
-function openSheet(html){
-  const root = $("#sheetRoot");
-  root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
-  const scrim = $("#scrim");
-  scrim.addEventListener("click", e=>{ if (e.target === scrim) closeSheet(); });
-  document.addEventListener("keydown", escClose);
-}
-function closeSheet(){ $("#sheetRoot").innerHTML = ""; document.removeEventListener("keydown", escClose); }
-function escClose(e){ if (e.key === "Escape") closeSheet(); }
-
-function accountSheet(){
-  if (hasBackend() && state.user) return accountSignedInSheet();
-  if (hasBackend()) return authSheet();
-  return localSetupSheet();
+  return document.documentElement.getAttribute("data-theme")
+    || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
 
-/* --- Local mode: names --- */
-function localSetupSheet(){
-  const p = state.profile || {};
-  openSheet(`
-    <div class="sheet-head">
-      <div><h2>Set up your deck</h2><p>Name yourselves so the app greets you both. Everything saves on this device.</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
-    </div>
-    <div class="field"><label for="youName">Your name</label><input id="youName" value="${escapeHtml(p.you||"")}" placeholder="e.g. Harshil" autocomplete="off"></div>
-    <div class="field"><label for="partnerName">Your partner's name</label><input id="partnerName" value="${escapeHtml(p.partner||"")}" placeholder="e.g. Alex" autocomplete="off"></div>
-    <div class="field"><button class="btn primary block lg" id="saveNames">Save</button></div>
-    <div class="divider">want it on both phones?</div>
-    <p class="saved-hint" style="margin-top:0">Real accounts that sync between you need a free Supabase backend (2-min setup).
-      <a href="#" id="toBackend" style="color:var(--accent);font-weight:600">Connect a backend →</a></p>
-  `);
-  $("#saveNames").addEventListener("click", ()=>{
-    state.profile = { you: $("#youName").value.trim(), partner: $("#partnerName").value.trim() };
-    lsSet(LS.profile, state.profile); updateWho(); closeSheet(); toast("Saved ♥");
-  });
-  $("#toBackend").addEventListener("click", e=>{ e.preventDefault(); backendConfigSheet(); });
-}
-
-/* --- Backend: paste keys --- */
-function backendConfigSheet(){
-  const cfg = lsGet(LS.cfg, {});
-  const fixed = window.DATE_NIGHT_CONFIG && window.DATE_NIGHT_CONFIG.supabaseUrl;
-  openSheet(`
-    <div class="sheet-head">
-      <div><h2>Connect a backend</h2><p>Paste the two keys from your Supabase project (Settings → API). Stored only on this device.</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
-    </div>
-    ${fixed ? `<div class="notice info">This copy already ships with a backend configured in <code>config.js</code>.</div>` : ""}
-    <div class="field"><label for="sbUrl">Project URL</label><input id="sbUrl" value="${escapeHtml(cfg.supabaseUrl||"")}" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
-    <div class="field"><label for="sbKey">Anon public key</label><input id="sbKey" value="${escapeHtml(cfg.supabaseAnonKey||"")}" placeholder="eyJhbGciOi…" autocomplete="off">
-      <div class="hintline">The anon key is safe to use in the browser — your data is protected by row-level security.</div></div>
-    <div class="field"><button class="btn primary block lg" id="saveCfg">Save &amp; connect</button></div>
-    <div class="notice info">Run <code>date-night/supabase-schema.sql</code> in your Supabase SQL editor once before signing in. See the README for the 4 steps.</div>
-  `);
-  $("#saveCfg").addEventListener("click", ()=>{
-    const url = $("#sbUrl").value.trim(), key = $("#sbKey").value.trim();
-    if (!url || !key){ toast("Both fields are required"); return; }
-    lsSet(LS.cfg, { supabaseUrl:url, supabaseAnonKey:key });
-    initBackend();
-    if (state.sb){ closeSheet(); authSheet(); } else { toast("Couldn't init — check the keys"); }
-  });
-}
-
-/* --- Backend: sign in / sign up --- */
-function authSheet(mode="signin"){
-  openSheet(`
-    <div class="sheet-head">
-      <div><h2>${mode==="signup"?"Create your account":"Welcome back"}</h2><p>Sign in on both phones with your own emails, then link up with a code.</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
-    </div>
-    <div class="tabs" role="tablist">
-      <button role="tab" id="tabIn" aria-selected="${mode==='signin'}">Sign in</button>
-      <button role="tab" id="tabUp" aria-selected="${mode==='signup'}">Sign up</button>
-    </div>
-    <div id="nameField" class="field" ${mode==='signup'?'':'hidden'}>
-      <label for="dispName">Your name</label><input id="dispName" placeholder="e.g. Harshil" autocomplete="name">
-    </div>
-    <div class="field"><label for="email">Email</label><input id="email" type="email" placeholder="you@email.com" autocomplete="email"></div>
-    <div class="field"><label for="pw">Password</label><input id="pw" type="password" placeholder="at least 6 characters" autocomplete="current-password"></div>
-    <div class="field"><button class="btn primary block lg" id="authGo">${mode==="signup"?"Create account":"Sign in"}</button></div>
-    <div id="authMsg"></div>
-    <div class="divider">or</div>
-    <button class="btn ghost block" id="editCfg">Change backend keys</button>
-  `);
-  $("#tabIn").addEventListener("click", ()=>authSheet("signin"));
-  $("#tabUp").addEventListener("click", ()=>authSheet("signup"));
-  $("#editCfg").addEventListener("click", backendConfigSheet);
-  $("#authGo").addEventListener("click", ()=>doAuth(mode));
-  $("#pw").addEventListener("keydown", e=>{ if(e.key==="Enter") doAuth(mode); });
-}
-function authMsg(kind, text){ $("#authMsg").innerHTML = `<div class="notice ${kind}">${escapeHtml(text)}</div>`; }
-async function doAuth(mode){
-  const email = $("#email").value.trim(), pw = $("#pw").value;
-  const name = mode==="signup" ? ($("#dispName")?.value.trim()||"") : "";
-  if (!email || !pw){ authMsg("err","Email and password are required."); return; }
-  const btn = $("#authGo"); btn.disabled = true; btn.textContent = "…";
-  try {
-    let res;
-    if (mode==="signup") res = await state.sb.auth.signUp({ email, password: pw });
-    else res = await state.sb.auth.signInWithPassword({ email, password: pw });
-    if (res.error) throw res.error;
-    if (mode==="signup" && !res.data.session){
-      authMsg("ok","Account created! Check your email to confirm, then sign in.");
-      btn.disabled=false; btn.textContent="Create account"; return;
-    }
-    await afterLogin(name);
-    closeSheet();
-    toast("Signed in ♥");
-  } catch(e){
-    const m = /fetch|network|Failed to fetch/i.test(e.message||"")
-      ? "Couldn't reach the backend from here. On the sandboxed preview, external databases are blocked — this works on your own hosted copy. For now, use the app in local mode."
-      : (e.message || "Something went wrong.");
-    authMsg("err", m); btn.disabled=false; btn.textContent = mode==="signup"?"Create account":"Sign in";
+function renderHeader(){
+  const sw = $("#personSwitch");
+  if (state.mode === "local"){
+    const d = L();
+    sw.hidden = false;
+    sw.innerHTML = d.people.map(p => `
+      <button class="p${p.slot}" data-slot="${p.slot}" aria-pressed="${String(p.slot === d.active)}"
+        title="${esc(p.name)}">${esc((p.name||"?").trim().charAt(0).toUpperCase())}</button>`).join("");
+    sw.querySelectorAll("button").forEach(b => b.addEventListener("click", ()=>{
+      if (b.dataset.slot === L().active) return;
+      handOff(b.dataset.slot);
+    }));
+    document.documentElement.setAttribute("data-person", d.active);
+    $("#whoLine").textContent = `${state.me?.name || "?"}'s turn · pass-the-phone mode`;
+  } else {
+    sw.hidden = true;
+    // signed-in partners each carry their own accent
+    document.documentElement.setAttribute("data-person", state.me?.color === "rose" ? "b" : "a");
+    $("#whoLine").textContent = state.partner
+      ? `${state.me?.name} & ${state.partner.name} · synced`
+      : `${state.me?.name || "signed in"} · invite your partner`;
   }
-}
-
-/* --- Backend: signed-in account + partner link --- */
-function accountSignedInSheet(){
-  const linked = state.partnerNames.length > 1;
-  openSheet(`
-    <div class="sheet-head">
-      <div><h2>You're signed in</h2><p>${escapeHtml(state.partnerNames.join(" & ") || "your account")}</p></div>
-      <button class="icon-btn" onclick="closeSheet()" aria-label="Close">✕</button>
-    </div>
-    ${linked ? `<div class="notice ok">Linked with your partner — your decks are in sync ♥</div>` : `
-      <div class="field">
-        <label>Your invite code — share it with your partner</label>
-        <div class="code-badge" id="inviteCode">${escapeHtml(state.inviteCode||"…")}</div>
-      </div>
-      <div class="divider">or join their code</div>
-      <div class="field"><label for="joinCode">Partner's invite code</label><input id="joinCode" placeholder="ABC123" autocomplete="off" style="text-transform:uppercase"></div>
-      <div class="field"><button class="btn primary block" id="joinBtn">Link our decks</button></div>
-      <div id="joinMsg"></div>
-    `}
-    <div class="settings-row" style="margin-top:18px">
-      <div><div class="lbl">Sign out</div><div class="sub">on this device</div></div>
-      <button class="btn ghost" id="signOut">Sign out</button>
-    </div>
-  `);
-  if (!linked){
-    $("#joinBtn").addEventListener("click", async ()=>{
-      const code = $("#joinCode").value.trim().toUpperCase();
-      if (!code){ return; }
-      const btn=$("#joinBtn"); btn.disabled=true; btn.textContent="Linking…";
-      try {
-        const { error } = await state.sb.rpc("join_couple", { p_code: code });
-        if (error) throw error;
-        await afterLogin();
-        closeSheet(); toast("Linked ♥");
-      } catch(e){ $("#joinMsg").innerHTML = `<div class="notice err">${escapeHtml(e.message||"Couldn't link — check the code.")}</div>`; btn.disabled=false; btn.textContent="Link our decks"; }
-    });
-  }
-  $("#signOut").addEventListener("click", async ()=>{
-    try { await state.sb.auth.signOut(); } catch {}
-    state.user=null; state.coupleId=null; state.inviteCode=null; state.partnerNames=[];
-    // fall back to local saved
-    state.saved = lsGet(LS.saved, []);
-    updateWho(); renderSaved(); closeSheet(); toast("Signed out");
-  });
-}
-
-/* ============================================================
-   Backend wiring
-   ============================================================ */
-function initBackend(){
-  const cfg = getConfig();
-  if (!cfg || !window.supabase || !window.supabase.createClient){ state.sb = null; return; }
-  try { state.sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey); }
-  catch { state.sb = null; }
-}
-async function afterLogin(name){
-  // bootstrap profile + couple, load partner + saved
-  const { data: prof, error } = await state.sb.rpc("bootstrap_profile", { p_name: name || null });
-  if (error) throw error;
-  const { data: sess } = await state.sb.auth.getUser();
-  state.user = sess.user;
-  state.coupleId = prof.couple_id;
-  // couple invite code
-  try {
-    const { data: couple } = await state.sb.from("couples").select("invite_code").eq("id", state.coupleId).single();
-    state.inviteCode = couple?.invite_code || null;
-  } catch {}
-  // partner names
-  try {
-    const { data: people } = await state.sb.from("profiles").select("display_name,id").eq("couple_id", state.coupleId);
-    state.partnerNames = (people||[]).map(p => p.display_name || "partner");
-  } catch { state.partnerNames = [prof.display_name || "you"]; }
-  // saved ideas
-  try {
-    const { data: ideas } = await state.sb.from("saved_ideas").select("*").eq("couple_id", state.coupleId).order("created_at",{ascending:false});
-    state.saved = (ideas||[]).map(r => ({ id:r.id, title:r.title, blurb:r.blurb, meta:r.meta, status:r.status }));
-  } catch { state.saved = []; }
-  updateWho(); renderSaved(); if (state.current) renderCard(state.current, false);
-}
-async function restoreSession(){
-  if (!state.sb) return false;
-  try {
-    const { data } = await state.sb.auth.getSession();
-    if (data.session){ await afterLogin(); return true; }
-  } catch {}
-  return false;
 }
 
 /* ============================================================
    Boot
    ============================================================ */
-async function boot(){
-  // theme
-  applyTheme(lsGet(LS.theme, "system"));
-  // filters
-  loadFilters();
-  buildFilters();
-  // local data
-  state.history = lsGet(LS.history, []);
-  state.profile = lsGet(LS.profile, null);
-  state.saved = lsGet(LS.saved, []);
-
-  // backend (best-effort; failures fall back to local silently)
-  initBackend();
-  if (state.sb){ await restoreSession(); }
-
-  updateWho();
-  renderSaved();
-  draw();               // open in a working state — a card is already dealt
-
-  // wire controls
-  $("#drawBtn").addEventListener("click", draw);
-  $("#saveBtn").addEventListener("click", saveCurrent);
-  $("#doneBtn").addEventListener("click", ()=>markDone("current"));
-  $("#resetBtn").addEventListener("click", ()=>{
-    state.filters = { vibes:new Set(), budgets:new Set(), settings:new Set(), times:new Set(), mix:false };
-    persistFilters(); buildFilters(); toast("Filters cleared");
-  });
-  $("#accountBtn").addEventListener("click", accountSheet);
-  $("#footAccount").addEventListener("click", e=>{ e.preventDefault(); accountSheet(); });
+function initSb(){
+  const cfg = getConfig();
+  if (!cfg || !window.supabase?.createClient){ state.sb = null; return; }
+  try { state.sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey); }
+  catch { state.sb = null; }
 }
+
+async function refreshDerived(){
+  state.myReactions = await api.myReactions();
+  state.consensus = await api.consensus();
+  state.progress = await api.progress();
+}
+
+async function boot(){
+  applyTheme(lsGet(LS.theme, "system"));
+
+  // Decide the mode: a live Supabase session wins, otherwise local.
+  state.mode = "local"; api = localApi; state.user = null;
+  if (backendConfigured()){
+    initSb();
+    if (state.sb){
+      try {
+        const { data } = await state.sb.auth.getSession();
+        if (data?.session){ state.user = data.session.user; state.mode = "backend"; api = backendApi; }
+      } catch { /* stay local */ }
+    }
+  }
+
+  try {
+    await api.init();
+  } catch (e) {
+    // Backend unreachable (sandboxed preview, bad keys, schema not run) — degrade gracefully.
+    console.warn("backend init failed, falling back to local", e);
+    state.mode = "local"; api = localApi; state.user = null;
+    await api.init();
+    toast("Backend unreachable — running in local mode");
+  }
+
+  await refreshDerived();
+  await dealHand();
+
+  renderHeader();
+  renderTonight();
+  renderConsensus();
+  renderFinds();
+  setTab(lsGet(LS.tab, "tonight"));
+}
+
+/* ---------- wire static controls once ---------- */
+$("#vPass").addEventListener("click", ()=>vote("pass"));
+$("#vMaybe").addEventListener("click", ()=>vote("maybe"));
+$("#vYes").addEventListener("click", ()=>vote("yes"));
+$("#themeBtn").addEventListener("click", ()=>applyTheme(currentTheme()==="dark" ? "light" : "dark"));
+$("#menuBtn").addEventListener("click", menuSheet);
+$("#areaBtn").addEventListener("click", areaSheet);
+$("#tab-tonight").addEventListener("click", ()=>setTab("tonight"));
+$("#tab-consensus").addEventListener("click", ()=>setTab("consensus"));
+$("#tab-finds").addEventListener("click", ()=>setTab("finds"));
+$("#findsFilterBtn").addEventListener("click", ()=>{
+  state.findsFilter = { all:"reddit", reddit:"blog", blog:"all" }[state.findsFilter];
+  renderFinds();
+});
+$("#sweepBtn").addEventListener("click", async ()=>{
+  const btn = $("#sweepBtn");
+  if (!state.area?.city){ toast("Set your area first"); areaSheet(); return; }
+  btn.disabled = true; btn.textContent = "🛰️ Sweeping…";
+  try {
+    const r = await api.sweep();
+    state.finds = await api.getFinds();
+    const n = r?.results?.reduce((a,x)=>a+(x.inserted||0),0) ?? 0;
+    toast(n ? `Found ${n} new idea${n===1?"":"s"} ♥` : "Swept — nothing new this time");
+    renderFinds();
+  } catch(e){ toast(e.message || "Sweep failed"); }
+  btn.disabled = false; btn.textContent = "🛰️ Sweep for new ideas";
+});
+
 boot();
 </script>
